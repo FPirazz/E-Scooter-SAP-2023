@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class EscooterApplication
+class DashboardServiceApplication
 
 fun main(args: Array<String>) {
-	runApplication<EscooterApplication>(*args)
+    runApplication<DashboardServiceApplication>(*args)
 }
