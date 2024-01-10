@@ -7,12 +7,11 @@
  */
 
 plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.8.10"
-
-    // Apply the application plugin to add support for building a CLI application in Java.
-    application
     id("org.springframework.boot") version "3.2.1"
+    id("io.spring.dependency-management") version "1.1.4"
+    kotlin("jvm") version "1.9.21"
+    kotlin("plugin.spring") version "1.9.21"
+    application
 }
 
 apply(plugin = "io.spring.dependency-management")
@@ -23,17 +22,12 @@ repositories {
 }
 
 dependencies {
-    // Use the Kotlin JUnit 5 integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    implementation("io.vertx:vertx-service-discovery:4.5.1")
-    implementation("io.vertx:vertx-core:4.5.1")
-    implementation("io.vertx:vertx-web:4.5.1")
-    implementation("io.vertx:vertx-service-discovery:4.5.1")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.1")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("com.google.guava:guava:31.1-jre")
     // Use the JUnit 5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
-
-    // This dependency is used by the application.
-    implementation("com.google.guava:guava:32.0.0-android")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -45,7 +39,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass.set("users_service.UsersServiceApp.kt")
+    mainClass.set("api_gateway.AppKt")
 }
 
 tasks.named<Test>("test") {

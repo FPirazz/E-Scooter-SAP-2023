@@ -1,35 +1,59 @@
-package users_service
-
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.AsyncResult
 import io.vertx.core.Promise
-import io.vertx.core.http.HttpServer
 import io.vertx.ext.web.Router
+import io.vertx.servicediscovery.ServiceDiscovery
+import io.vertx.servicediscovery.types.HttpEndpoint
 import users_service.handlers.HomeHandler
 import java.net.InetAddress
 
 class UsersServiceVerticle : AbstractVerticle() {
-    override fun start(startPromise: Promise<Void>) {
-        val router = Router.router(vertx)
+    private lateinit var serviceDiscovery: ServiceDiscovery
 
+    override fun start(startPromise: Promise<Void>) {
+        serviceDiscovery = ServiceDiscovery.create(vertx)
+
+        val router = Router.router(vertx)
+        router.route("/*").handler { routingContext ->
+            val request = routingContext.request()
+            println("Received request: ${request.method()} ${request.uri()}")
+            routingContext.next()
+        }
         router.get("/").handler(HomeHandler()::handle)
 
+        createHttpServer(router, startPromise)
+    }
+
+    private fun createHttpServer(router: Router, startPromise: Promise<Void>) {
         vertx.createHttpServer()
             .requestHandler(router)
-            .listen(8888) { http ->
-                if (http.succeeded()) {
-                    startPromise.complete()
-                    printIPAndPort(http)
+            .listen(8888) { httpServerAsyncResult ->
+                if (httpServerAsyncResult.succeeded()) {
+                    val ipAddress = InetAddress.getLocalHost().hostAddress
+                    val port = httpServerAsyncResult.result().actualPort()
+                    println("Server is listening on IP address: $ipAddress:$port")
+
+                    publishServiceRecord(ipAddress, port, startPromise)
                 } else {
-                    startPromise.fail(http.cause());
+                    startPromise.fail(httpServerAsyncResult.cause())
                 }
             }
     }
 
-    private fun printIPAndPort(http: AsyncResult<HttpServer>) {
-        val ip = InetAddress.getLocalHost().hostAddress
-        val port = http.result().actualPort()
-        println("Server is listening on IP address: $ip:$port")
+    private fun publishServiceRecord(ipAddress: String, port: Int, startPromise: Promise<Void>) {
+        val record = HttpEndpoint.createRecord("users-service", ipAddress, port, "/")
+        serviceDiscovery.publish(record) { publishAsyncResult ->
+            if (publishAsyncResult.succeeded()) {
+                println("Service published")
+                startPromise.complete()
+            } else {
+                println("Service publication failed")
+                startPromise.fail(publishAsyncResult.cause())
+            }
+        }
+    }
+
+    override fun stop(stopPromise: Promise<Void>) {
+        serviceDiscovery.close()
+        super.stop(stopPromise)
     }
 }
-

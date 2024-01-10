@@ -9,4 +9,9 @@ class Controller {
     fun home(): String {
         return "Welcome to the E-Scooter Microservices!"
     }
+
+    @GetMapping("/dashboard/")
+    fun dashboard(): String {
+        return "Welcome to the Dashboard!"
+    }
 }
