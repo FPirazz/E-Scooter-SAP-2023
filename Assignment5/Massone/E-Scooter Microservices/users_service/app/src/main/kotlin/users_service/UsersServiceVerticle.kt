@@ -4,6 +4,7 @@ import io.vertx.ext.web.Router
 import io.vertx.servicediscovery.ServiceDiscovery
 import io.vertx.servicediscovery.types.HttpEndpoint
 import users_service.handlers.HomeHandler
+import users_service.handlers.RegisterHandler
 import java.net.InetAddress
 
 class UsersServiceVerticle : AbstractVerticle() {
@@ -15,10 +16,12 @@ class UsersServiceVerticle : AbstractVerticle() {
         val router = Router.router(vertx)
         router.route("/*").handler { routingContext ->
             val request = routingContext.request()
-            println("Received request: ${request.method()} ${request.uri()}")
+            println("[VERTX_USER_SERVICE] Received request: ${request.method()} ${request.uri()}")
             routingContext.next()
         }
         router.get("/").handler(HomeHandler()::handle)
+        router.get("/register").handler(RegisterHandler()::handle)
+
 
         createHttpServer(router, startPromise)
     }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>User Service</title>
+    <script>
+        async function goToRegistration() {
+            try {
+                const response = await fetch('/users/register', { method: 'GET' });
+                if (response.ok) {
+                    document.body.innerHTML = await response.text();
+                } else {
+                    console.error('Error:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Fetch failed:', error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Welcome to the User Service!</h2>
+    <button onclick="goToRegistration()">Register</button>
+</body>
+</html>
