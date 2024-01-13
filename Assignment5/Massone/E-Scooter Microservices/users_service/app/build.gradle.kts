@@ -25,10 +25,11 @@ repositories {
 dependencies {
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.slf4j:slf4j-simple:2.1.0-alpha1")
     implementation("io.vertx:vertx-service-discovery:4.5.1")
     implementation("io.vertx:vertx-core:4.5.1")
     implementation("io.vertx:vertx-web:4.5.1")
-    implementation("io.vertx:vertx-redis-client:4.5.1")
+    implementation("io.vertx:vertx-mongo-client:4.5.1")
     implementation("io.vertx:vertx-service-discovery:4.5.1")
     // This dependency is used by the application.
     implementation("com.google.guava:guava:32.0.0-android")

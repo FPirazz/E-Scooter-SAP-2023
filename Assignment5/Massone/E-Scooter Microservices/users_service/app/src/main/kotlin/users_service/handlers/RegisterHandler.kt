@@ -1,12 +1,15 @@
 package users_service.handlers
 
 import io.vertx.core.http.HttpHeaders
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.RoutingContext
-import io.vertx.redis.client.RedisAPI
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class RegisterHandler(private val redis: RedisAPI) : Handler {
+class RegisterHandler(
+    private val mongoClient: MongoClient,
+) : Handler {
     override fun handle(routingContext: RoutingContext) {
         // print the request
         val request = routingContext.request()
@@ -31,32 +34,48 @@ class RegisterHandler(private val redis: RedisAPI) : Handler {
     }
 
     private fun handlePost(routingContext: RoutingContext) {
-        // Prin the request
+        // Print the request
         val request = routingContext.request()
         println("[VERTX_REGISTER_HANDLER] Received request: ${request.method()} ${request.uri()}")
 
-        // Handle POST request here
+        // Get the user's information from the request
+        val name = routingContext.request().getFormAttribute("name")
+        val email = routingContext.request().getFormAttribute("email")
+        val password = routingContext.request().getFormAttribute("password")
 
-        // get the user's information from the request
-        val name = routingContext.request().getParam("name")
-        val email = routingContext.request().getParam("email")
-        val password = routingContext.request().getParam("password")
+        // Check if any of the parameters are null
+        if (name == null) {
+            println("Name is null")
+        }
+        if (email == null) {
+            println("Email is null")
+        }
+        if (password == null) {
+            println("Password is null")
+        }
 
-        // create a User instance
+        if (name == null || email == null || password == null) {
+            routingContext.response().setStatusCode(400).end("Missing request parameters")
+            return
+        }
+
+        // Create a User instance
         val user = models.User(name, email, password)
 
-        // store the user's information in Redis
-        val hmsetArgs = listOf(
-            email,
-            "name", user.name,
-            "email", user.email,
-            "password", user.password
-        )
-        redis.hmset(hmsetArgs) { ar ->
+        // Create a JsonObject to store the user's information
+        val userJson = JsonObject()
+            .put("name", user.name)
+            .put("email", user.email)
+            .put("password", user.password)
+
+        // Store the user's information in MongoDB
+        mongoClient.save("users", userJson) { ar ->
             if (ar.succeeded()) {
-                println("User stored in Redis")
+                println("User stored in MongoDB")
+                // redirect to the users root
+                routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
             } else {
-                println("Failed to store user in Redis: ${ar.cause()}")
+                println("Failed to store user in MongoDB: ${ar.cause()}")
             }
         }
     }
