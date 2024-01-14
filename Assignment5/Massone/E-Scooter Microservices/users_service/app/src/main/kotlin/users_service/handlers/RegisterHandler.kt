@@ -2,13 +2,13 @@ package users_service.handlers
 
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.RoutingContext
+import users_service.db.DatabaseClient
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class RegisterHandler(
-    private val mongoClient: MongoClient,
+    private val dbClient: DatabaseClient,
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
         // print the request
@@ -69,7 +69,7 @@ class RegisterHandler(
             .put("password", user.password)
 
         // Store the user's information in MongoDB
-        mongoClient.save("users", userJson) { ar ->
+        dbClient.save("users", userJson) { ar ->
             if (ar.succeeded()) {
                 println("User stored in MongoDB")
                 // redirect to the users root

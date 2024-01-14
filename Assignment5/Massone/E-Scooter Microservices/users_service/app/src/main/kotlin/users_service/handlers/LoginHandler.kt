@@ -2,13 +2,13 @@ package users_service.handlers
 
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.RoutingContext
+import users_service.db.DatabaseClient
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class LoginHandler(
-    private val mongoClient: MongoClient,
+    private val dbClient: DatabaseClient,
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
         val request = routingContext.request()
@@ -40,12 +40,15 @@ class LoginHandler(
         }
 
         val query = JsonObject().put("email", email)
-        mongoClient.findOne("users", query, null) { ar ->
+        dbClient.findOne("users", query, null) { ar ->
             if (ar.succeeded()) {
                 val user = ar.result()
                 if (user != null && user.getString("password") == password) {
                     // User is authenticated, handle the session here
-                    routingContext.response().setStatusCode(200).end("User authenticated")
+                    val session = routingContext.session()
+                    session.put("user", user)
+                    // Redirect to the home page
+                    routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
                 } else {
                     routingContext.response().setStatusCode(401).end("Invalid email or password")
                 }
