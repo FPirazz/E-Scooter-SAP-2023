@@ -1,5 +1,6 @@
 package users_service.handlers
 
+import io.vertx.core.http.Cookie
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
@@ -44,9 +45,11 @@ class LoginHandler(
             if (ar.succeeded()) {
                 val user = ar.result()
                 if (user != null && user.getString("password") == password) {
-                    // User is authenticated, handle the session here
-                    val session = routingContext.session()
-                    session.put("user", user)
+                    // Create a cookie with the user's email
+                    val cookie = Cookie.cookie("email", user.getString("email"))
+                    cookie.setMaxAge(86400) // Set the cookie to expire after one day
+                    // Set the cookie in the response
+                    routingContext.response().addCookie(cookie)
                     // Redirect to the home page
                     routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
                 } else {
