@@ -28,11 +28,16 @@
                 console.error('Fetch failed:', error);
             }
         }
+
+        function goToDashboard() {
+            window.location.href = "/dashboard/";
+        }
     </script>
 </head>
 <body>
     <h2>Welcome to the User Service!</h2>
     <button onclick="goToRegistration()">Register</button>
     <button onclick="goToLogin()">Login</button>
+    <button onclick="goToDashboard()">Go to Dashboard</button>
 </body>
 </html>
