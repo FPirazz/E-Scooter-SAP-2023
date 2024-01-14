@@ -7,6 +7,7 @@ import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import users_service.handlers.HomeHandler
+import users_service.handlers.LoginHandler
 import users_service.handlers.RegisterHandler
 import java.net.InetAddress
 
@@ -27,6 +28,8 @@ class UsersServiceVerticle : AbstractVerticle() {
         router.get("/").handler(HomeHandler(mongoClient)::handle)
         router.get("/register").handler(RegisterHandler(mongoClient)::handle)
         router.post("/register").handler(RegisterHandler(mongoClient)::handle)
+        router.get("/login").handler(LoginHandler(mongoClient)::handle)
+        router.post("/login").handler(LoginHandler(mongoClient)::handle)
 
         createHttpServer(router, startPromise)
     }

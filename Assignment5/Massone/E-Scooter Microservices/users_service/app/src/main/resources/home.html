@@ -15,10 +15,24 @@
                 console.error('Fetch failed:', error);
             }
         }
+
+        async function goToLogin() {
+            try {
+                const response = await fetch('/users/login', { method: 'GET' });
+                if (response.ok) {
+                    document.body.innerHTML = await response.text();
+                } else {
+                    console.error('Error:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Fetch failed:', error);
+            }
+        }
     </script>
 </head>
 <body>
     <h2>Welcome to the User Service!</h2>
     <button onclick="goToRegistration()">Register</button>
+    <button onclick="goToLogin()">Login</button>
 </body>
 </html>
