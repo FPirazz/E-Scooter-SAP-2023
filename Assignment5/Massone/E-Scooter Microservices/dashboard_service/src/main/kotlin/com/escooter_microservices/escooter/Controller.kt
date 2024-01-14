@@ -1,9 +1,10 @@
 package com.escooter_microservices.escooter
 
+import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.ModelAndView
 
-@RestController
+@Controller
 class Controller {
     @GetMapping("/")
     fun home(): String {
@@ -11,7 +12,7 @@ class Controller {
     }
 
     @GetMapping("/dashboard/")
-    fun dashboard(): String {
-        return "Welcome to the Dashboard!"
+    fun dashboard(): ModelAndView {
+        return ModelAndView("dashboard")
     }
 }
