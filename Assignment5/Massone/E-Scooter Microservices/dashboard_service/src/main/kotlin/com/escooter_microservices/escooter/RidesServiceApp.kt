@@ -6,8 +6,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 @SpringBootApplication
 @EnableWebMvc
-class DashboardServiceApp
+class RidesServiceApp
 
 fun main(args: Array<String>) {
-    runApplication<DashboardServiceApp>(*args)
+    runApplication<RidesServiceApp>(*args)
 }

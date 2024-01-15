@@ -8,6 +8,6 @@ import org.springframework.web.servlet.ModelAndView
 class Controller {
     @GetMapping("/")
     fun home(): ModelAndView {
-        return ModelAndView("dashboard")
+        return ModelAndView("rides")
     }
 }

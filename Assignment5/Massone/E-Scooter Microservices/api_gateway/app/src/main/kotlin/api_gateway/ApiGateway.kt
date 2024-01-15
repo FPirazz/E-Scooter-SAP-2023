@@ -5,7 +5,6 @@ import org.springframework.boot.runApplication
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
-import org.springframework.web.server.ServerWebExchange
 
 @SpringBootApplication
 class ApiGateway {
@@ -22,10 +21,10 @@ class ApiGateway {
             .build()
 
     @Bean
-    fun dashboardServiceRoute(builder: RouteLocatorBuilder): RouteLocator =
+    fun ridesServiceRoute(builder: RouteLocatorBuilder): RouteLocator =
         builder.routes()
-            .route("dashboard_service_root_route") {
-                it.path("/dashboard/**").uri("http://localhost:8081")
+            .route("rides_service_root_route") {
+                it.path("/rides/**").uri("http://localhost:8081")
             }
             .build()
 
