@@ -26,7 +26,7 @@ class RegisterHandler(
     private fun handleGet(routingContext: RoutingContext) {
         // Handle GET request here
         val filePath =
-            Paths.get("Assignment5/Massone/E-Scooter Microservices/users_service/app/src/main/resources/registration.html")
+            Paths.get("Massone/E-Scooter Microservices/users_service/app/src/main/resources/registration.html")
         val fileBytes = Files.readAllBytes(filePath)
         val fileContent = String(fileBytes)
 
