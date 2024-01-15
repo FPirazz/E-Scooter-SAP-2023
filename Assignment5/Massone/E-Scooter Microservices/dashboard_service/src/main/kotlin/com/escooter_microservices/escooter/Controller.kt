@@ -7,12 +7,7 @@ import org.springframework.web.servlet.ModelAndView
 @Controller
 class Controller {
     @GetMapping("/")
-    fun home(): String {
-        return "Welcome to the E-Scooter Microservices!"
-    }
-
-    @GetMapping("/dashboard/")
-    fun dashboard(): ModelAndView {
+    fun home(): ModelAndView {
         return ModelAndView("dashboard")
     }
 }
