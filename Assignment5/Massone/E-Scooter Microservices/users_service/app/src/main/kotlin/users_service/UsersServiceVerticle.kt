@@ -7,6 +7,7 @@ import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.SessionHandler
+import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.sstore.LocalSessionStore
 import users_service.db.DatabaseClient
 import users_service.db.MongoDatabaseClient
@@ -25,20 +26,21 @@ class UsersServiceVerticle : AbstractVerticle() {
         databaseClient = MongoDatabaseClient(mongoClient)
 
         val router = Router.router(vertx)
-        router.route().handler(BodyHandler.create()) // Add this line to add a BodyHandler
-        router.route()
-            .handler(SessionHandler.create(LocalSessionStore.create(vertx))) // Add this line to add a SessionHandler
-//        router.route("/*").handler { routingContext ->
-//            val request = routingContext.request()
-//            println("[VERTX_USER_SERVICE] Received request: ${request.method()} ${request.uri()}")
-//            routingContext.next()
-//        }
+        router.route().handler(BodyHandler.create())
+        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)))
         router.get("/").handler(HomeHandler(databaseClient)::handle)
         router.get("/register").handler(RegisterHandler(databaseClient)::handle)
         router.post("/register").handler(RegisterHandler(databaseClient)::handle)
         router.get("/login").handler(LoginHandler(databaseClient)::handle)
         router.post("/login").handler(LoginHandler(databaseClient)::handle)
         router.post("/logout").handler(LogoutHandler()::handle)
+
+        // Add a custom handler to log request information
+        router.route("/scripts/*").handler { routingContext ->
+            val request = routingContext.request()
+            println("Received request for static file: ${request.method()} ${request.uri()}")
+            routingContext.next()
+        }.handler(StaticHandler.create("scripts"))
 
         createHttpServer(router, startPromise)
     }

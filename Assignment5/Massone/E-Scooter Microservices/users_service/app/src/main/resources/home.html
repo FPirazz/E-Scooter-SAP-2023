@@ -9,65 +9,9 @@
 
         .button-container button {
             margin-right: 10px;
+            width: 100px; /* Set a fixed width for all buttons */
         }
     </style>
-    <script>
-        function checkLoginStatus() {
-            const emailCookie = document.cookie.split('; ').find(row => row.startsWith('email'));
-            if (emailCookie) {
-                document.getElementById('loginButton').style.display = 'none';
-                document.getElementById('logoutButton').style.display = 'inline-block';
-            } else {
-                document.getElementById('loginButton').style.display = 'inline-block';
-                document.getElementById('logoutButton').style.display = 'none';
-            }
-        }
-
-        async function logout() {
-            try {
-                const response = await fetch('/users/logout', {method: 'POST'});
-                if (response.ok) {
-                    document.body.innerHTML = await response.text();
-                } else {
-                    console.error('Logout failed:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Fetch failed:', error);
-            }
-        }
-
-        async function goToRegistration() {
-            try {
-                const response = await fetch('/users/register', {method: 'GET'});
-                if (response.ok) {
-                    document.body.innerHTML = await response.text();
-                } else {
-                    console.error('Error:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Fetch failed:', error);
-            }
-        }
-
-        async function goToLogin() {
-            try {
-                const response = await fetch('/users/login', {method: 'GET'});
-                if (response.ok) {
-                    document.body.innerHTML = await response.text();
-                } else {
-                    console.error('Error:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Fetch failed:', error);
-            }
-        }
-
-        function goToRidesDashboard() {
-            window.location.href = "/";
-        }
-
-        window.onload = checkLoginStatus;
-    </script>
 </head>
 <body>
 <h2>Welcome to the User Service!</h2>
@@ -77,5 +21,6 @@
     <button onclick="goToRegistration()">Register</button>
     <button onclick="goToRidesDashboard()">Go to Rides</button>
 </div>
+<script src="/users/scripts/home.js" defer></script>
 </body>
 </html>
