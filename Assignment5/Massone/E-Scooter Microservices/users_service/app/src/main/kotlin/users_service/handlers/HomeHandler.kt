@@ -14,6 +14,8 @@ class HomeHandler(
         val fileBytes = Files.readAllBytes(filePath)
         var fileContent = String(fileBytes)
 
+        println("[VERTX_HOME_HANDLER] Received request: ${routingContext.request().method()} ${routingContext.request().uri()}")
+
         // Retrieve the user's email from the cookie
         val emailCookie = routingContext.cookieMap()["email"]
         if (emailCookie != null) {
@@ -25,7 +27,6 @@ class HomeHandler(
             println("User is not logged in")
             println("Session data: ${routingContext.session().data()}")
         }
-
         routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(fileContent)
     }
 }

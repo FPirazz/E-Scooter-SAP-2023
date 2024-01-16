@@ -2,10 +2,43 @@
 <html lang="en">
 <head>
     <title>User Service</title>
+    <style>
+        .button-container {
+            display: flex;
+        }
+
+        .button-container button {
+            margin-right: 10px;
+        }
+    </style>
     <script>
+        function checkLoginStatus() {
+            const emailCookie = document.cookie.split('; ').find(row => row.startsWith('email'));
+            if (emailCookie) {
+                document.getElementById('loginButton').style.display = 'none';
+                document.getElementById('logoutButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('loginButton').style.display = 'inline-block';
+                document.getElementById('logoutButton').style.display = 'none';
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/users/logout', {method: 'POST'});
+                if (response.ok) {
+                    document.body.innerHTML = await response.text();
+                } else {
+                    console.error('Logout failed:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Fetch failed:', error);
+            }
+        }
+
         async function goToRegistration() {
             try {
-                const response = await fetch('/users/register', { method: 'GET' });
+                const response = await fetch('/users/register', {method: 'GET'});
                 if (response.ok) {
                     document.body.innerHTML = await response.text();
                 } else {
@@ -18,7 +51,7 @@
 
         async function goToLogin() {
             try {
-                const response = await fetch('/users/login', { method: 'GET' });
+                const response = await fetch('/users/login', {method: 'GET'});
                 if (response.ok) {
                     document.body.innerHTML = await response.text();
                 } else {
@@ -32,12 +65,17 @@
         function goToRidesDashboard() {
             window.location.href = "/";
         }
+
+        window.onload = checkLoginStatus;
     </script>
 </head>
 <body>
-    <h2>Welcome to the User Service!</h2>
+<h2>Welcome to the User Service!</h2>
+<div class="button-container">
+    <button id="loginButton" onclick="goToLogin()" style="display: none;">Login</button>
+    <button id="logoutButton" onclick="logout()" style="display: none;">Logout</button>
     <button onclick="goToRegistration()">Register</button>
-    <button onclick="goToLogin()">Login</button>
     <button onclick="goToRidesDashboard()">Go to Rides</button>
+</div>
 </body>
 </html>

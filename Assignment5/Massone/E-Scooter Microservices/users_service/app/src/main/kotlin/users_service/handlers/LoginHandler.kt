@@ -13,7 +13,7 @@ class LoginHandler(
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
         val request = routingContext.request()
-        println("[VERTX_LOGIN_HANDLER] Received request: ${request.method()} ${request.uri()}")
+        //println("[VERTX_LOGIN_HANDLER] Received request: ${request.method()} ${request.uri()}")
 
         if (request.method().name() == "GET") {
             handleGet(routingContext)

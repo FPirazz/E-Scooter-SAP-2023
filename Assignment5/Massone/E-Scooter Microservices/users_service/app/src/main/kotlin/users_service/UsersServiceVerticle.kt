@@ -12,6 +12,7 @@ import users_service.db.DatabaseClient
 import users_service.db.MongoDatabaseClient
 import users_service.handlers.HomeHandler
 import users_service.handlers.LoginHandler
+import users_service.handlers.LogoutHandler
 import users_service.handlers.RegisterHandler
 import java.net.InetAddress
 
@@ -27,16 +28,17 @@ class UsersServiceVerticle : AbstractVerticle() {
         router.route().handler(BodyHandler.create()) // Add this line to add a BodyHandler
         router.route()
             .handler(SessionHandler.create(LocalSessionStore.create(vertx))) // Add this line to add a SessionHandler
-        router.route("/*").handler { routingContext ->
-            val request = routingContext.request()
-            println("[VERTX_USER_SERVICE] Received request: ${request.method()} ${request.uri()}")
-            routingContext.next()
-        }
+//        router.route("/*").handler { routingContext ->
+//            val request = routingContext.request()
+//            println("[VERTX_USER_SERVICE] Received request: ${request.method()} ${request.uri()}")
+//            routingContext.next()
+//        }
         router.get("/").handler(HomeHandler(databaseClient)::handle)
         router.get("/register").handler(RegisterHandler(databaseClient)::handle)
         router.post("/register").handler(RegisterHandler(databaseClient)::handle)
         router.get("/login").handler(LoginHandler(databaseClient)::handle)
         router.post("/login").handler(LoginHandler(databaseClient)::handle)
+        router.post("/logout").handler(LogoutHandler()::handle)
 
         createHttpServer(router, startPromise)
     }
