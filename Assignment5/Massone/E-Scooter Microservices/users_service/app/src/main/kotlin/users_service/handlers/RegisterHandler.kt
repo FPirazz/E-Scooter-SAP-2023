@@ -34,49 +34,35 @@ class RegisterHandler(
     }
 
     private fun handlePost(routingContext: RoutingContext) {
-        // Print the request
-        val request = routingContext.request()
-        println("[VERTX_REGISTER_HANDLER] Received request: ${request.method()} ${request.uri()}")
-
         // Get the user's information from the request
         val name = routingContext.request().getFormAttribute("name")
         val email = routingContext.request().getFormAttribute("email")
         val password = routingContext.request().getFormAttribute("password")
+        val isMaintainer = routingContext.request().getFormAttribute("maintainer") != null
 
         // Check if any of the parameters are null
-        if (name == null) {
-            println("Name is null")
-        }
-        if (email == null) {
-            println("Email is null")
-        }
-        if (password == null) {
-            println("Password is null")
-        }
-
         if (name == null || email == null || password == null) {
             routingContext.response().setStatusCode(400).end("Missing request parameters")
             return
         }
 
         // Create a User instance
-        val user = models.User(name, email, password)
+        val user = models.User(name, email, password, isMaintainer)
 
         // Create a JsonObject to store the user's information
         val userJson = JsonObject()
             .put("name", user.name)
             .put("email", user.email)
             .put("password", user.password)
+            .put("maintainer", user.isMaintainer)
 
         // Store the user's information in MongoDB
         dbClient.save("users", userJson) { ar ->
             if (ar.succeeded()) {
-                println("User stored in MongoDB")
                 // redirect to the users root
                 routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
             } else {
                 println("Failed to store user in MongoDB: ${ar.cause()}")
             }
         }
-    }
-}
+    }}
