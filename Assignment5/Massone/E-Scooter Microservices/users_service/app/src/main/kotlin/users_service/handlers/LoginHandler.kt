@@ -13,7 +13,6 @@ class LoginHandler(
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
         val request = routingContext.request()
-        //println("[VERTX_LOGIN_HANDLER] Received request: ${request.method()} ${request.uri()}")
 
         if (request.method().name() == "GET") {
             handleGet(routingContext)
@@ -23,8 +22,7 @@ class LoginHandler(
     }
 
     private fun handleGet(routingContext: RoutingContext) {
-        val filePath =
-            Paths.get("Massone/E-Scooter Microservices/users_service/app/src/main/resources/login.html")
+        val filePath = Paths.get("Massone/E-Scooter Microservices/users_service/app/src/main/resources/login.html")
         val fileBytes = Files.readAllBytes(filePath)
         val fileContent = String(fileBytes)
 
