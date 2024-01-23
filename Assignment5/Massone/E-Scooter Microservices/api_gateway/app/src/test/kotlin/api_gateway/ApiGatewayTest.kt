@@ -4,7 +4,6 @@
 package api_gateway
 
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 class ApiGatewayTest {
     @Test fun appHasAGreeting() {
