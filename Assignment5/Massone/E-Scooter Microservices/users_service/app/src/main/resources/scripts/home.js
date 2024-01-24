@@ -39,7 +39,7 @@ function goToLogin() {
     window.location.href = "/users/login";
 }
 function goToRidesDashboard() {
-    window.location.href = "/";
+    window.location.href = "/rides/home";
 }
 
 $(document).ready(function() {

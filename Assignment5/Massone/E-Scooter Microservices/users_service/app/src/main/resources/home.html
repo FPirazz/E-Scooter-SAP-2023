@@ -20,8 +20,13 @@
     <button id="loginButton" onclick="goToLogin()" style="display: none;">Login</button>
     <button id="logoutButton" onclick="logout()" style="display: none;">Logout</button>
     <button onclick="goToRegistration()">Register</button>
-    <button onclick="goToRidesDashboard()">Go to Rides</button>
+    <button onclick="goToRides()">Go to Rides</button>
 </div>
 <script src="/users/scripts/home.js" defer></script>
+<script>
+    function goToRides() {
+        window.location.href = "/rides/";
+    }
+</script>
 </body>
 </html>
