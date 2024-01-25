@@ -44,12 +44,17 @@ class LoginHandler(
                 val user = ar.result()
                 if (user != null && user.getString("password") == password) {
                     // Create a cookie with the user's email
-                    val cookie = Cookie.cookie("email", user.getString("email"))
-                    cookie.setMaxAge(86400) // Set the cookie to expire after one day
-                    cookie.setPath("/")
-                    cookie.setHttpOnly(true)
+                    val userCookie = Cookie.cookie("email", user.getString("email"))
+                    userCookie.setMaxAge(86400) // Set the cookie to expire after one day
+                    userCookie.setPath("/")
                     // Set the cookie in the response
-                    routingContext.response().addCookie(cookie)
+                    routingContext.response().addCookie(userCookie)
+                    // Retrieve the cookie from the context and check if it is set correctly
+                    val emailCookie = routingContext.cookieMap()["email"]
+                    if (emailCookie != null) {
+                        println("[LoginHandler] Cookie data: ${emailCookie.name} ${emailCookie.value} ${emailCookie.maxAge}")
+                    }
+
                     // Redirect to the home page
                     routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
                 } else {
