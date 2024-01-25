@@ -36,14 +36,4 @@ class RidesServiceRoute(private val logger: Logger) {
             }.uri("http://localhost:8081")
     }.build()
 
-    private fun redirectToLogin(exchange: ServerWebExchange): Mono<Void> {
-        val redirectHtml = ClassPathResource("redirect.html")
-        val htmlContent = StreamUtils.copyToString(redirectHtml.inputStream, StandardCharsets.UTF_8)
-        exchange.response.headers.contentType = MediaType.TEXT_HTML
-        return exchange.response.writeWith(
-            Mono.just(
-                exchange.response.bufferFactory().wrap(htmlContent.toByteArray())
-            )
-        )
-    }
 }
