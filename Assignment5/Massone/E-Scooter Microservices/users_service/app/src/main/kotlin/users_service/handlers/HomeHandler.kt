@@ -14,30 +14,11 @@ class HomeHandler(
         val fileBytes = Files.readAllBytes(filePath)
         var fileContent = String(fileBytes)
 
-        println(
-            "[VERTX_HOME_HANDLER] Received request: ${routingContext.request().method()} ${
-                routingContext.request().uri()
-            }"
-        )
-
         // Retrieve the user's email from the cookie
-        val emailCookie = routingContext.cookieMap()["email"]
-        if (emailCookie != null) {
-            println("[HomeHandler] Cookie data: ${emailCookie.name} ${emailCookie.value} ${emailCookie.maxAge}")
-        }
-        if (emailCookie != null) {
+        routingContext.cookieMap()["email"]?.let { emailCookie ->
             // If the cookie exists and is not expired, add the email to the welcome message
             val email = emailCookie.value
             fileContent = fileContent.replace("Welcome to the User Service!", "Welcome to the User Service, $email!")
-            // Hide the login button and show the logout button
-            fileContent =
-                fileContent.replace("<button id=\"loginButton\"", "<button id=\"loginButton\" style=\"display: none;\"")
-            fileContent = fileContent.replace(
-                "<button id=\"logoutButton\"", "<button id=\"logoutButton\" style=\"display: block;\""
-            )
-        } else {
-            println("User is not logged in or cookie is expired")
-            println("Cookie data: $emailCookie")
         }
         routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(fileContent)
     }
