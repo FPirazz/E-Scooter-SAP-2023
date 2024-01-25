@@ -1,5 +1,6 @@
 package api_gateway
 
+import api_gateway.routes.DefaultRoute
 import api_gateway.routes.RidesServiceRoute
 import api_gateway.routes.UsersServiceRoute
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -18,6 +19,9 @@ class ApiGateway {
 
     @Bean
     fun ridesServiceRoute(builder: RouteLocatorBuilder): RouteLocator = RidesServiceRoute(logger).route(builder)
+
+    @Bean
+    fun defaultRoute(builder: RouteLocatorBuilder): RouteLocator = DefaultRoute(logger).route(builder)
 }
 
 fun main(args: Array<String>) {
