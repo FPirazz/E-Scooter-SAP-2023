@@ -25,6 +25,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.1")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-autoconfigure:3.2.2")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     implementation("com.google.guava:guava:31.1-jre")
     // Use the JUnit 5 integration.

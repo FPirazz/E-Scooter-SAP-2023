@@ -1,6 +1,7 @@
 package api_gateway
 
 import api_gateway.routes.DefaultRoute
+import api_gateway.routes.MaintenanceServiceRoute
 import api_gateway.routes.RidesServiceRoute
 import api_gateway.routes.UsersServiceRoute
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -13,6 +14,10 @@ import java.util.logging.Logger
 @SpringBootApplication
 class ApiGateway {
     private val logger = Logger.getLogger(ApiGateway::class.java.name)
+
+    @Bean
+    fun maintenersServiceRoute(builder: RouteLocatorBuilder): RouteLocator =
+        MaintenanceServiceRoute(logger).route(builder)
 
     @Bean
     fun usersServiceRoute(builder: RouteLocatorBuilder): RouteLocator = UsersServiceRoute(logger).route(builder)
