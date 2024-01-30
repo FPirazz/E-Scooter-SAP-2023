@@ -2,10 +2,24 @@
 <html lang="en">
 <head>
     <title>Maintainers Service</title>
+    <script>
+        function createScooter() {
+            fetch('/maintenance/create_escooter/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: 'Scooter Name',
+                    location: 'Scooter Location'
+                })
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Welcome to Maintenance service</h1>
-    <button onclick="window.location.href='/create_escooter/'">Create E-scooter</button>
+    <button onclick="createScooter()">Create E-scooter</button>
     <button onclick="window.location.href='/'">Go back to Home</button>
 </body>
 </html>
