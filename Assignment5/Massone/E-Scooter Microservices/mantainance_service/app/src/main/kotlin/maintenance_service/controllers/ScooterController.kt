@@ -2,28 +2,25 @@ package maintenance_service.controllers
 
 import maintenance_service.models.Scooter
 import maintenance_service.repositories.ScooterRepository
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.ModelAndView
 
-@RestController
-@RequestMapping("/create_escooter/")
+@Controller
 class ScooterController(private val scooterRepository: ScooterRepository) {
-    @PostMapping
-    fun createScooter(@RequestBody scooter: Scooter): ResponseEntity<String> {
+    @PostMapping("/create_escooter/")
+    fun createScooter(@RequestBody scooter: Scooter): ModelAndView {
         if (scooter.name == null || scooter.location == null) {
-            return ResponseEntity("Missing request parameters", HttpStatus.BAD_REQUEST)
+            return ModelAndView("escooter_error")
         }
 
         scooterRepository.save(scooter)
 
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.TEXT_HTML
-        return ResponseEntity("<html><body><p>Escooter created</p></body></html>", headers, HttpStatus.CREATED)
+        return ModelAndView("escooter_created")
+    }
+
+    @GetMapping("/escooter_created/")
+    fun getScooters(): ModelAndView {
+        return ModelAndView("escooter_created")
     }
 }

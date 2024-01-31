@@ -3,8 +3,8 @@
 <head>
     <title>Maintainers Service</title>
     <script>
-        function createScooter() {
-            fetch('/maintenance/create_escooter/', {
+        async function createScooter() {
+            const response = await fetch('/maintenance/create_escooter/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -14,12 +14,20 @@
                     location: 'Scooter Location'
                 })
             });
+
+            if (!response.ok) {
+                // Handle error
+                console.error('An error occurred:', response.statusText);
+            } else {
+                // redirect to "/maintenance/escooter_created/"
+                window.location.href = '/maintenance/escooter_created/';
+            }
         }
     </script>
 </head>
 <body>
-    <h1>Welcome to Maintenance service</h1>
-    <button onclick="createScooter()">Create E-scooter</button>
-    <button onclick="window.location.href='/'">Go back to Home</button>
+<h1>Welcome to Maintenance service</h1>
+<button onclick="createScooter()">Create E-scooter</button>
+<button onclick="window.location.href='/'">Go back to Home</button>
 </body>
 </html>
