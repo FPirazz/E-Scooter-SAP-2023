@@ -10,7 +10,7 @@ class HomeHandler(
     private val dbClient: DatabaseClient,
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
-        val filePath = Paths.get("Massone/E-Scooter Microservices/users_service/app/src/main/resources/home.html")
+        val filePath = Paths.get("Assignment5/Massone/E-Scooter Microservices/users_service/app/src/main/resources/home.html")
         val fileBytes = Files.readAllBytes(filePath)
         var fileContent = String(fileBytes)
 

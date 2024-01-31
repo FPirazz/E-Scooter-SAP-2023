@@ -22,7 +22,7 @@ class LoginHandler(
     }
 
     private fun handleGet(routingContext: RoutingContext) {
-        val filePath = Paths.get("Massone/E-Scooter Microservices/users_service/app/src/main/resources/login.html")
+        val filePath = Paths.get("Assignment5/Massone/E-Scooter Microservices/users_service/app/src/main/resources/login.html")
         val fileBytes = Files.readAllBytes(filePath)
         val fileContent = String(fileBytes)
 
