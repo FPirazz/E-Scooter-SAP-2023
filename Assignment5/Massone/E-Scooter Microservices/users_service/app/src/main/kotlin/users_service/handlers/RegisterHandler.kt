@@ -37,7 +37,7 @@ class RegisterHandler(
         val name = routingContext.request().getFormAttribute("name")
         val email = routingContext.request().getFormAttribute("email")
         val password = routingContext.request().getFormAttribute("password")
-        val isMaintainer = routingContext.request().getFormAttribute("maintainer") != null
+        val isMaintainer = routingContext.request().getFormAttribute("maintainer") == "true"
 
         // Check if any of the parameters are null
         if (name == null || email == null || password == null) {

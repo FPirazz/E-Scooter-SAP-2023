@@ -47,16 +47,22 @@ class LoginHandler(
                 val user = ar.result()
                 if (user != null && user.getString("password") == password) {
                     // Create a cookie with the user's email
-                    val userCookie = Cookie.cookie("email", user.getString("email"))
-                    userCookie.setMaxAge(86400) // Set the cookie to expire after one day
-                    userCookie.setPath("/")
-                    // Set the cookie in the response
-                    routingContext.response().addCookie(userCookie)
-                    // Retrieve the cookie from the context and check if it is set correctly
-                    val emailCookie = routingContext.cookieMap()["email"]
-                    if (emailCookie != null) {
-                        println("[LoginHandler] Cookie data: ${emailCookie.name} ${emailCookie.value} ${emailCookie.maxAge}")
-                    }
+                    val emailCookie = Cookie.cookie("email", user.getString("email"))
+                    emailCookie.setMaxAge(86400) // Set the cookie to expire after one day
+                    emailCookie.setPath("/")
+
+                    // Create a separate cookie to indicate if the user is a maintainer
+                    val isMaintainer = user.getBoolean("maintainer") ?: false
+                    val maintainerCookie = Cookie.cookie("isMaintainer", isMaintainer.toString())
+                    maintainerCookie.setMaxAge(86400) // Set the cookie to expire after one day
+                    maintainerCookie.setPath("/")
+
+                    // Set the cookies in the response
+                    routingContext.response().addCookie(emailCookie)
+                    routingContext.response().addCookie(maintainerCookie)
+
+                    // Log the information
+                    println("[LoginHandler] Cookies set: Email: ${user.getString("email")}, Is Maintainer: $isMaintainer")
 
                     // Redirect to the home page
                     routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
@@ -67,5 +73,7 @@ class LoginHandler(
                 routingContext.response().setStatusCode(500).end("Server error")
             }
         }
+
     }
+
 }
