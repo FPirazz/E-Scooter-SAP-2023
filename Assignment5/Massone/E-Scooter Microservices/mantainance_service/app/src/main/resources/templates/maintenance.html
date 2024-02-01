@@ -23,11 +23,32 @@
                 window.location.href = '/maintenance/escooter_created/';
             }
         }
+
+        async function populateScooterDropdown() {
+            const response = await fetch('/maintenance/all_scooters/');
+            const scooters = await response.json();
+
+            const dropdown = document.getElementById('scooterDropdown');
+            scooters.forEach(scooter => {
+                const option = document.createElement('option');
+                option.value = scooter.id;
+                option.text = scooter.name;
+                dropdown.add(option);
+            });
+        }
+
+        window.onload = populateScooterDropdown;
     </script>
 </head>
 <body>
 <h1>Welcome to Maintenance service</h1>
 <button onclick="createScooter()">Create E-scooter</button>
+<label for="scooterDropdown">
+    Select E-scooter to maintain:
+</label>
+<select id="scooterDropdown">
+    <!-- Options will be added here dynamically -->
+</select>
 <button onclick="window.location.href='/'">Go back to Home</button>
 </body>
 </html>

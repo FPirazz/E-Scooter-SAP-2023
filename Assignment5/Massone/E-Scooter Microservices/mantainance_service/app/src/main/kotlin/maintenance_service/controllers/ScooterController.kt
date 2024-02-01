@@ -6,7 +6,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.ModelAndView
 
-@Controller
+@RestController
 class ScooterController(private val scooterRepository: ScooterRepository) {
     @PostMapping("/create_escooter/")
     fun createScooter(@RequestBody scooter: Scooter): ModelAndView {
@@ -20,7 +20,12 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
     }
 
     @GetMapping("/escooter_created/")
-    fun getScooters(): ModelAndView {
+    fun scooterCreated(): ModelAndView {
         return ModelAndView("escooter_created")
+    }
+
+    @GetMapping("/all_scooters/")
+    fun getAllScooters(): List<Scooter> {
+        return scooterRepository.findAll()
     }
 }
