@@ -2,53 +2,100 @@
 <html lang="en">
 <head>
     <title>Maintainers Service</title>
-    <script>
-        async function createScooter() {
-            const response = await fetch('/maintenance/create_escooter/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: 'Scooter Name',
-                    location: 'Scooter Location'
-                })
-            });
-
-            if (!response.ok) {
-                // Handle error
-                console.error('An error occurred:', response.statusText);
-            } else {
-                // redirect to "/maintenance/escooter_created/"
-                window.location.href = '/maintenance/escooter_created/';
-            }
-        }
-
-        async function populateScooterDropdown() {
-            const response = await fetch('/maintenance/all_scooters/');
-            const scooters = await response.json();
-
-            const dropdown = document.getElementById('scooterDropdown');
-            scooters.forEach(scooter => {
-                const option = document.createElement('option');
-                option.value = scooter.id;
-                option.text = scooter.name;
-                dropdown.add(option);
-            });
-        }
-
-        window.onload = populateScooterDropdown;
-    </script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<h1>Welcome to Maintenance service</h1>
-<button onclick="createScooter()">Create E-scooter</button>
-<label for="scooterDropdown">
-    Select E-scooter to maintain:
-</label>
-<select id="scooterDropdown">
-    <!-- Options will be added here dynamically -->
-</select>
-<button onclick="window.location.href='/'">Go back to Home</button>
+    <div class="container mt-3">
+        <h1>Welcome to Maintenance service</h1>
+        <button class="btn btn-primary" onclick="createScooter()">Create E-scooter</button>
+        <div class="form-group">
+            <label for="scooterDropdown">Select E-scooter to maintain:</label>
+            <select class="form-control" id="scooterDropdown">
+                <!-- Options will be added here dynamically -->
+            </select>
+        </div>
+        <button class="btn btn-warning" onclick="toggleRepairState()">Toggle Repair State</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">Go back to Home</button>
+    </div>
 </body>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    button, select, label {
+        margin: 10px 0;
+        padding: 10px;
+    }
+</style>
+<script>
+    async function createScooter() {
+        const response = await fetch('/maintenance/create_escooter/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: 'Scooter Name',
+                location: 'Scooter Location'
+            })
+        })
+
+        if (!response.ok) {
+            // Handle error
+            console.error('An error occurred:', response.statusText)
+        } else {
+            // redirect to "/maintenance/escooter_created/"
+            window.location.href = '/maintenance/escooter_created/'
+        }
+    }
+
+    async function populateScooterDropdown() {
+        const response = await fetch('/maintenance/all_scooters/')
+        const scooters = await response.json()
+
+        const dropdown = document.getElementById('scooterDropdown')
+        scooters.forEach((scooter) => {
+            const option = document.createElement('option')
+            option.value = scooter.id
+            option.text = scooter.name
+            dropdown.add(option)
+        })
+    }
+
+    async function toggleRepairState() {
+        const dropdown = document.getElementById('scooterDropdown')
+        const selectedScooterId = dropdown.value
+
+        const response = await fetch(`/maintenance/toggle_repair_state/${selectedScooterId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        if (!response.ok) {
+            // Handle error
+            console.error('An error occurred:', response.statusText)
+        } else {
+            // Refresh the page to show the updated state
+            location.reload()
+        }
+    }
+
+    window.onload = populateScooterDropdown
+</script>
 </html>
