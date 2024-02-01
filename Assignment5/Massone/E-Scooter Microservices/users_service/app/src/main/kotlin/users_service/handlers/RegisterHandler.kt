@@ -64,4 +64,5 @@ class RegisterHandler(
                 println("Failed to store user in MongoDB: ${ar.cause()}")
             }
         }
-    }}
+    }
+}

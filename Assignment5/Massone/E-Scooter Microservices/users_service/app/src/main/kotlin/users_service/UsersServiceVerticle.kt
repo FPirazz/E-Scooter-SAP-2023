@@ -21,7 +21,7 @@ class UsersServiceVerticle : AbstractVerticle() {
     private lateinit var databaseClient: DatabaseClient
 
     override fun start(startPromise: Promise<Void>) {
-        val mongoConfig = JsonObject().put("connection_string", "mongodb://localhost:27017").put("db_name", "Escooters")
+        val mongoConfig = JsonObject().put("connection_string", "mongodb://localhost:27017").put("db_name", "Users_Service")
         val mongoClient = MongoClient.createShared(vertx, mongoConfig)
         databaseClient = MongoDatabaseClient(mongoClient)
 
