@@ -4,8 +4,8 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class RegisterHandler(
     private val dbClient: DatabaseClient,
@@ -25,10 +25,9 @@ class RegisterHandler(
 
     private fun handleGet(routingContext: RoutingContext) {
         // Handle GET request here
-        val filePath =
-            Paths.get("Assignment5/Massone/E-Scooter Microservices/users_service/app/src/main/resources/registration.html")
-        val fileBytes = Files.readAllBytes(filePath)
-        val fileContent = String(fileBytes)
+        val inputStream = javaClass.getResourceAsStream("/registration.html")
+        val reader = inputStream?.let { InputStreamReader(it) }?.let { BufferedReader(it) }
+        val fileContent = reader?.readText()
 
         routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(fileContent)
     }

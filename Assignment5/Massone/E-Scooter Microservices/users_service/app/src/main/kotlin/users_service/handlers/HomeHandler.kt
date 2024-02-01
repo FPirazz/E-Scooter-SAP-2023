@@ -3,16 +3,16 @@ package users_service.handlers
 import io.vertx.core.http.HttpHeaders
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class HomeHandler(
     private val dbClient: DatabaseClient,
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
-        val filePath = Paths.get("Assignment5/Massone/E-Scooter Microservices/users_service/app/src/main/resources/home.html")
-        val fileBytes = Files.readAllBytes(filePath)
-        var fileContent = String(fileBytes)
+        val inputStream = javaClass.getResourceAsStream("/home.html")
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        var fileContent = reader.readText()
 
         // Retrieve the user's email from the cookie
         routingContext.cookieMap()["email"]?.let { emailCookie ->
