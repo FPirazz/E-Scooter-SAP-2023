@@ -11,7 +11,7 @@ import java.util.logging.Logger
 
 class RidesServiceRoute(private val logger: Logger) {
     fun route(builder: RouteLocatorBuilder): RouteLocator = builder.routes().route("rides_service_root_route") {
-        it.path("/rides/")
+        it.path("/rides/**")
             .filters { f ->
                 f.filter { exchange, chain ->
                     val request = exchange.request
