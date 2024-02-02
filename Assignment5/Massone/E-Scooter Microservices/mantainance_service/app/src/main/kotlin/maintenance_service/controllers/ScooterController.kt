@@ -59,4 +59,17 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
         }
     }
 
+    @DeleteMapping("/delete_scooter/{scooterId}/")
+    fun deleteScooter(@PathVariable scooterId: String): ResponseEntity<String> {
+        val scooterOptional = scooterRepository.findById(scooterId)
+        return if (scooterOptional.isPresent) {
+            val scooter = scooterOptional.get()
+            scooterRepository.delete(scooter)
+            ResponseEntity.ok("Scooter deleted successfully")
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
+        }
+    }
+
+
 }

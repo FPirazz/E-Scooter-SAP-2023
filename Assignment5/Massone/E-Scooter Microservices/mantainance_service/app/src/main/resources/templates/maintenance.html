@@ -28,7 +28,7 @@
             <!-- Options will be added here dynamically -->
         </select>
     </div>
-    <!-- Nuova tabella per visualizzare gli scooter -->
+    <!-- Aggiornata la tabella con una colonna per il pulsante "Elimina" -->
     <table class="table mt-3" id="scooterTable" style="display: none;">
         <thead>
         <tr>
@@ -36,12 +36,14 @@
             <th>Name</th>
             <th>Location</th>
             <th>State</th>
+            <th>Action</th> <!-- Nuova colonna per il pulsante "Elimina" -->
         </tr>
         </thead>
         <tbody id="scooterTableBody">
         <!-- Contenuto della tabella sarà aggiunto dinamicamente qui -->
         </tbody>
     </table>
+
 
     <button class="btn btn-success" onclick="displayAllScooters()">Display All Scooters</button>
     <button class="btn btn-warning" onclick="toggleRepairState()">Toggle Repair State</button>
@@ -153,18 +155,40 @@
         const response = await fetch('/maintenance/all_scooters/');
         const scooters = await response.json();
 
-        // Popola la tabella con gli scooter
+        // Popola la tabella con gli scooter e aggiungi il pulsante "Elimina"
         scooters.forEach((scooter) => {
             const row = tableBody.insertRow();
             row.insertCell(0).textContent = scooter.id;
             row.insertCell(1).textContent = scooter.name;
             row.insertCell(2).textContent = scooter.location;
             row.insertCell(3).textContent = scooter.state;
+
+            // Aggiunto pulsante "Elimina"
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Elimina';
+            deleteButton.className = 'btn btn-danger';
+            deleteButton.onclick = () => deleteScooter(scooter.id); // Chiamata alla funzione di eliminazione
+            row.insertCell(4).appendChild(deleteButton);
         });
 
         // Mostra la tabella
         table.style.display = 'block';
     }
+
+    // Funzione per eliminare uno specifico scooter
+    async function deleteScooter(scooterId) {
+        const response = await fetch(`/maintenance/delete_scooter/${scooterId}/`, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            // Aggiorna la tabella dopo l'eliminazione
+            displayAllScooters();
+        } else {
+            console.error('Errore durante l\'eliminazione dello scooter:', response.statusText);
+        }
+    }
+
 
 
     window.onload = populateScooterDropdown
