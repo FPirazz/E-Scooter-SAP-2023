@@ -67,7 +67,8 @@
             },
             body: JSON.stringify({
                 name: scooterName,
-                location: scooterLocation
+                location: scooterLocation,
+                state: "ready"
             })
         })
 
@@ -94,24 +95,36 @@
     }
 
     async function toggleRepairState() {
-        const dropdown = document.getElementById('scooterDropdown')
-        const selectedScooterId = dropdown.value
+        const dropdown = document.getElementById('scooterDropdown');
+        const selectedScooterId = dropdown.value;
 
-        const response = await fetch(`/maintenance/toggle_repair_state/${selectedScooterId}/`, {
-            method: 'POST',
+        // Get the current state of the selected scooter
+        const currentStateResponse = await fetch(`/maintenance/get_scooter_state/${selectedScooterId}/`);
+        const currentState = await currentStateResponse.json();
+
+        // Toggle the state from "ready" to "repair" or vice versa
+        const newState = currentState.state === "ready" ? "repair" : "ready";
+
+        const response = await fetch(`/maintenance/set_scooter_state/${selectedScooterId}/`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
-            }
-        })
+            },
+            body: JSON.stringify({
+                state: newState
+            })
+        });
 
         if (!response.ok) {
             // Handle error
-            console.error('An error occurred:', response.statusText)
+            console.error('An error occurred:', response.statusText);
         } else {
             // Refresh the page to show the updated state
-            location.reload()
+            location.reload();
         }
     }
+
+
 
     window.onload = populateScooterDropdown
 </script>

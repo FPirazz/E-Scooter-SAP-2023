@@ -5,8 +5,9 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "scooters")
 data class Scooter(
-    @Id
+        @Id
     val id: String? = null,
-    val name: String? = null,
-    val location: String? = null
+        val name: String? = null,
+        val location: String? = null,
+        var state: String? = null
 )
