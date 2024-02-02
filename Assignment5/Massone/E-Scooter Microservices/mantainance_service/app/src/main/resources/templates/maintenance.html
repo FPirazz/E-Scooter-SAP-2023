@@ -28,6 +28,22 @@
             <!-- Options will be added here dynamically -->
         </select>
     </div>
+    <!-- Nuova tabella per visualizzare gli scooter -->
+    <table class="table mt-3" id="scooterTable" style="display: none;">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Location</th>
+            <th>State</th>
+        </tr>
+        </thead>
+        <tbody id="scooterTableBody">
+        <!-- Contenuto della tabella sarà aggiunto dinamicamente qui -->
+        </tbody>
+    </table>
+
+    <button class="btn btn-success" onclick="displayAllScooters()">Display All Scooters</button>
     <button class="btn btn-warning" onclick="toggleRepairState()">Toggle Repair State</button>
     <button class="btn btn-secondary" onclick="window.location.href='/maintenance/escooter_created/'">Go back to Home</button>
 </div>
@@ -124,6 +140,31 @@
         }
     }
 
+    async function displayAllScooters() {
+        const table = document.getElementById('scooterTable');
+        const tableBody = document.getElementById('scooterTableBody');
+
+        // Nascondi la tabella se è già visualizzata
+        table.style.display = 'none';
+
+        // Pulisci il contenuto della tabella
+        tableBody.innerHTML = '';
+
+        const response = await fetch('/maintenance/all_scooters/');
+        const scooters = await response.json();
+
+        // Popola la tabella con gli scooter
+        scooters.forEach((scooter) => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = scooter.id;
+            row.insertCell(1).textContent = scooter.name;
+            row.insertCell(2).textContent = scooter.location;
+            row.insertCell(3).textContent = scooter.state;
+        });
+
+        // Mostra la tabella
+        table.style.display = 'block';
+    }
 
 
     window.onload = populateScooterDropdown
