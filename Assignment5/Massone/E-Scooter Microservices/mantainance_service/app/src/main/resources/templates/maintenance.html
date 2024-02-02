@@ -5,18 +5,32 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container mt-3">
-        <h1>Welcome to Maintenance service</h1>
-        <button class="btn btn-primary" onclick="createScooter()">Create E-scooter</button>
-        <div class="form-group">
-            <label for="scooterDropdown">Select E-scooter to maintain:</label>
-            <select class="form-control" id="scooterDropdown">
-                <!-- Options will be added here dynamically -->
-            </select>
-        </div>
-        <button class="btn btn-warning" onclick="toggleRepairState()">Toggle Repair State</button>
-        <button class="btn btn-secondary" onclick="window.location.href='/'">Go back to Home</button>
+<div class="container mt-3">
+    <h1>Welcome to Maintenance service</h1>
+
+    <!-- Aggiungi due input per ID e location -->
+    <div class="form-group">
+        <label for="scooterName">Scooter Name:</label>
+        <input type="text" class="form-control" id="scooterName" placeholder="Enter Name">
     </div>
+    <div class="form-group">
+        <label for="scooterLocation">Scooter Location:</label>
+        <input type="text" class="form-control" id="scooterLocation" placeholder="Enter Location">
+    </div>
+
+    <!-- Bottone per creare E-scooter -->
+    <button class="btn btn-primary" onclick="createScooter()">Create E-scooter</button>
+
+    <!-- Altri elementi rimangono invariati -->
+    <div class="form-group">
+        <label for="scooterDropdown">Select E-scooter to maintain:</label>
+        <select class="form-control" id="scooterDropdown">
+            <!-- Options will be added here dynamically -->
+        </select>
+    </div>
+    <button class="btn btn-warning" onclick="toggleRepairState()">Toggle Repair State</button>
+    <button class="btn btn-secondary" onclick="window.location.href='/maintenance/escooter_created/'">Go back to Home</button>
+</div>
 </body>
 <style>
     body {
@@ -36,21 +50,24 @@
         color: #333;
     }
 
-    button, select, label {
+    button, select, label, input {
         margin: 10px 0;
         padding: 10px;
     }
 </style>
 <script>
     async function createScooter() {
+        const scooterName = document.getElementById('scooterName').value;
+        const scooterLocation = document.getElementById('scooterLocation').value;
+
         const response = await fetch('/maintenance/create_escooter/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: 'Scooter Name',
-                location: 'Scooter Location'
+                name: scooterName,
+                location: scooterLocation
             })
         })
 
