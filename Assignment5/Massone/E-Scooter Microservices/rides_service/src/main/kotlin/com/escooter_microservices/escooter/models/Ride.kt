@@ -1,4 +1,4 @@
-package com.escooter_microservices.escooter
+package com.escooter_microservices.escooter.models
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document

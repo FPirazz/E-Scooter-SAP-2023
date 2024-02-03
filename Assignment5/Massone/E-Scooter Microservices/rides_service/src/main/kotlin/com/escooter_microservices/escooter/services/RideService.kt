@@ -1,5 +1,7 @@
-package com.escooter_microservices.escooter
+package com.escooter_microservices.escooter.services
 
+import com.escooter_microservices.escooter.models.Ride
+import com.escooter_microservices.escooter.repositories.RideRepository
 import org.springframework.stereotype.Service
 
 @Service

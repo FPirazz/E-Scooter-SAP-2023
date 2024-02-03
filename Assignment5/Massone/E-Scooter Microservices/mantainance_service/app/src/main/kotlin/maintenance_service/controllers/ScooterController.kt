@@ -2,6 +2,7 @@ package maintenance_service.controllers
 
 import maintenance_service.models.Scooter
 import maintenance_service.repositories.ScooterRepository
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -10,6 +11,8 @@ import org.springframework.web.servlet.ModelAndView
 
 @RestController
 class ScooterController(private val scooterRepository: ScooterRepository) {
+    private val logger = LoggerFactory.getLogger(ScooterController::class.java)
+
     @PostMapping("/create_escooter/")
     fun createScooter(@RequestBody scooter: Scooter): ModelAndView {
         if (scooter.name == null || scooter.location == null) {
@@ -44,7 +47,10 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
         }
     }
 
-
+    @GetMapping("/available_scooters/")
+    fun getAvailableScooters(): List<Scooter> {
+        return scooterRepository.findAll().filter { it.state == "ready" }
+    }
 
     @PutMapping("/set_scooter_state/{scooterId}/")
     fun setScooterState(@PathVariable scooterId: String, @RequestBody updatedScooter: Scooter): ResponseEntity<String> {
@@ -59,4 +65,30 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
         }
     }
 
+    // Add this method to ScooterController.kt in maintenance_service
+    @PutMapping("/use_scooter/{scooterId}/")
+    fun useScooter(@PathVariable scooterId: String): ResponseEntity<String> {
+        return try {
+            val scooterOptional = scooterRepository.findById(scooterId)
+            logger.info("Scooter with id $scooterId found")
+            if (scooterOptional.isPresent) {
+                val scooter = scooterOptional.get()
+                if (scooter.state == "ready") {
+                    scooter.state = "in use"
+                    scooterRepository.save(scooter)
+                    logger.info("Scooter with id $scooterId is now in use")
+                    ResponseEntity.ok("Scooter is now in use")
+                } else {
+                    logger.warn("Scooter with id $scooterId is not available")
+                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scooter is not available")
+                }
+            } else {
+                logger.warn("Scooter with id $scooterId not found")
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
+            }
+        } catch (e: Exception) {
+            logger.error("An error occurred while trying to use scooter with id $scooterId: ${e.message}")
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred")
+        }
+    }
 }
