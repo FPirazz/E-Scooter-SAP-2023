@@ -2,30 +2,32 @@
 <html lang="en">
 <head>
     <title>Create a Ride</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        window.onload = function () {
-            fetch('/maintenance/available_scooters/')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
+        $(document).ready(function () {
+            $.ajax({
+                url: 'http://localhost:8080/maintenance/available_scooters/',
+                type: 'GET',
+                success: function (scooters) {
+                    if (scooters.length > 0) {
+                        // Handle available scooters. For example, populate a dropdown:
+                        const dropdown = $('#scooterSelect'); // replace with your actual dropdown id
+                        scooters.forEach(function (scooter) {
+                            dropdown.append($('<option></option>').val(scooter.id).text(scooter.name));
+                        });
+                    } else {
+                        // Handle no available scooters. For example, show an error message:
+                        alert('No available scooters');
+                        // Then redirect back to the previous page:
+                        window.history.back();
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    const select = document.getElementById('scooterSelect');
-                    data.forEach(scooter => {
-                        const option = document.createElement('option');
-                        option.value = scooter.id;
-                        option.text = scooter.name;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('There has been a problem with your fetch operation:', error);
-                    // Handle the error here. For example, you can show an error message to the user.
-                    alert('There was an error fetching the available scooters. Please try again later.');
-                });
-        }
+                },
+                error: function () {
+                    // Handle error. For example, show an error message:
+                    alert('Error getting available scooters');
+                }
+            });
+        });
     </script>
 </head>
 <body>

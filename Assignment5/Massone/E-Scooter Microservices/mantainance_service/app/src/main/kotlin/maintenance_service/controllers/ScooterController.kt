@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.ModelAndView
 
-
 @RestController
 class ScooterController(private val scooterRepository: ScooterRepository) {
     private val logger = LoggerFactory.getLogger(ScooterController::class.java)
@@ -47,13 +46,24 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
         }
     }
 
+    /**
+     * Handles GET requests to the "/available_scooters/" endpoint. Makes an HTTP GET request to the
+     * "http://localhost:8080/scooters/available_scooters" URL and returns the response as a list of
+     * Scooter objects wrapped in a ResponseEntity.
+     *
+     * @return ResponseEntity containing a list of available Scooter objects.
+     */
     @GetMapping("/available_scooters/")
-    fun getAvailableScooters(): List<Scooter> {
-        return scooterRepository.findAll().filter { it.state == "ready" }
+    private fun getAvailableScooters(): ResponseEntity<List<Scooter>> {
+        val scooters = scooterRepository.findAll().filter { it.state == "ready" }
+        return ResponseEntity.ok(scooters)
     }
 
     @PutMapping("/set_scooter_state/{scooterId}/")
-    fun setScooterState(@PathVariable scooterId: String, @RequestBody updatedScooter: Scooter): ResponseEntity<String> {
+    fun setScooterState(
+        @PathVariable scooterId: String,
+        @RequestBody updatedScooter: Scooter,
+    ): ResponseEntity<String> {
         val scooterOptional = scooterRepository.findById(scooterId)
         return if (scooterOptional.isPresent) {
             val existingScooter = scooterOptional.get()
@@ -87,7 +97,9 @@ class ScooterController(private val scooterRepository: ScooterRepository) {
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
             }
         } catch (e: Exception) {
-            logger.error("An error occurred while trying to use scooter with id $scooterId: ${e.message}")
+            logger.error(
+                "An error occurred while trying to use scooter with id $scooterId: ${e.message}"
+            )
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred")
         }
     }

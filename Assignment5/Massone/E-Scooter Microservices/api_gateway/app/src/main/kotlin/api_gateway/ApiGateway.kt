@@ -16,7 +16,8 @@ class ApiGateway {
     private val logger = Logger.getLogger(ApiGateway::class.java.name)
 
     @Bean
-    fun maintenersServiceRoute(builder: RouteLocatorBuilder): RouteLocator = MaintenanceServiceRoute(logger).route(builder)
+    fun maintenersServiceRoute(builder: RouteLocatorBuilder): RouteLocator =
+        MaintenanceServiceRoute(logger).route(builder)
 
     @Bean
     fun usersServiceRoute(builder: RouteLocatorBuilder): RouteLocator = UsersServiceRoute(logger).route(builder)

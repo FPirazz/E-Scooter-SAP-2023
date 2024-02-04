@@ -16,6 +16,7 @@ class MaintenanceServiceRoute(private val logger: Logger) {
     companion object {
         private const val MAINTENANCE_ROUTE = "/maintenance/**"
         private const val REDIRECT_HTML = "redirect.html"
+        private const val IS_MAINTAINER = "isMaintainer"
     }
 
     fun route(builder: RouteLocatorBuilder): RouteLocator =
@@ -43,27 +44,23 @@ class MaintenanceServiceRoute(private val logger: Logger) {
 
         // Check if email cookie is set for non-PUT requests
         if (request.method != HttpMethod.PUT) {
-            val isMaintainerCookie = request.cookies["isMaintainer"]
+            val isMaintainerCookie = request.cookies[IS_MAINTAINER]
             isMaintainerCookie?.let { logger.info("Request with correct cookies: ${request.uri}") }
                     ?: run {
                         logger.info("Request without correct cookies: ${request.uri}")
-                        val redirectHtml = ClassPathResource(REDIRECT_HTML)
-                        val htmlContent =
-                                StreamUtils.copyToString(
-                                        redirectHtml.inputStream,
-                                        StandardCharsets.UTF_8
-                                )
-                        exchange.response.headers.contentType = MediaType.TEXT_HTML
-                        return@applyFilter exchange.response.writeWith(
-                                Mono.just(
-                                        exchange.response
-                                                .bufferFactory()
-                                                .wrap(htmlContent.toByteArray())
-                                )
-                        )
+                        return@applyFilter redirectToLogin(exchange)
                     }
         }
 
         return chain.filter(exchange)
+    }
+
+    private fun redirectToLogin(exchange: ServerWebExchange): Mono<Void> {
+        val redirectHtml = ClassPathResource(REDIRECT_HTML)
+        val htmlContent = StreamUtils.copyToString(redirectHtml.inputStream, StandardCharsets.UTF_8)
+        exchange.response.headers.contentType = MediaType.TEXT_HTML
+        return exchange.response.writeWith(
+                Mono.just(exchange.response.bufferFactory().wrap(htmlContent.toByteArray()))
+        )
     }
 }
