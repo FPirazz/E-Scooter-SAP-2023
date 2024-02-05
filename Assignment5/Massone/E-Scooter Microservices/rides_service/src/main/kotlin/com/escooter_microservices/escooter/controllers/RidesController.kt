@@ -3,8 +3,12 @@ package com.escooter_microservices.escooter.controllers
 
 import com.escooter_microservices.escooter.models.Ride
 import com.escooter_microservices.escooter.services.RideService
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import org.slf4j.LoggerFactory
-import org.springframework.http.*
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.util.LinkedMultiValueMap
@@ -12,12 +16,17 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UriComponentsBuilder
 
 @Controller
-class RidesController(private val rideService: RideService) {
+class RidesController(
+    private val rideService: RideService,
+    private val circuitBreaker: CircuitBreaker,
+) {
     private val logger = LoggerFactory.getLogger(RidesController::class.java)
 
     /**
@@ -74,19 +83,16 @@ class RidesController(private val rideService: RideService) {
         val uri = UriComponentsBuilder.fromHttpUrl("http://localhost:8080/maintenance/use_scooter/$scooterId/")
             .queryParams(multiValueMap).build(false).toUri()
         val request = HttpEntity<String>(headers)
-        val responseEntity: ResponseEntity<String> =
-            RestTemplate().exchange(uri, HttpMethod.PUT, request, String::class.java)
 
-        return if (responseEntity.statusCode == HttpStatus.OK) {
-            try {
+        return try {
+            circuitBreaker.executeSupplier {
+                RestTemplate().exchange(uri, HttpMethod.PUT, request, String::class.java)
                 logger.info("Put request to maintenance service successful")
                 rideService.createRide(ride)
                 ModelAndView("ride_created")
-            } catch (e: Exception) {
-                ModelAndView("error_page") // replace with your actual error page
             }
-        } else {
-            ModelAndView("error_page") // replace with your actual error page
+        } catch (e: HttpServerErrorException) {
+            ModelAndView("circuit_breaker_open") // redirect to circuit breaker open page
         }
     }
 }

@@ -22,9 +22,14 @@
                         window.history.back();
                     }
                 },
-                error: function () {
-                    // Handle error. For example, show an error message:
-                    alert('Error getting available scooters');
+                error: function (jqXHR, textStatus, errorThrown) {
+                    if (jqXHR.status === 503) {
+                        // The Circuit Breaker might be open
+                        window.location.href = 'circuit_breaker_open.html';
+                    } else {
+                        // Handle other errors
+                        alert('An error occurred: ' + textStatus);
+                    }
                 }
             });
         });
