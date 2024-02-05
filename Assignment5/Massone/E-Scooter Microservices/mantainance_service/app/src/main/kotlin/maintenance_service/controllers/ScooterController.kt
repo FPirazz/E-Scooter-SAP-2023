@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.servlet.ModelAndView
 
@@ -131,11 +132,21 @@ class ScooterController(
                     ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
                 }
             }
+        } catch (e: HttpClientErrorException) {
+            logger.error(
+                "An error occurred while trying to use scooter with id $scooterId: ${e.message}"
+            )
+            ResponseEntity.status(e.statusCode).body(e.statusText)
         } catch (e: HttpServerErrorException) {
             logger.error(
                 "An error occurred while trying to use scooter with id $scooterId: ${e.message}"
             )
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred")
+            ResponseEntity.status(e.statusCode).body(e.statusText)
+        } catch (e: Exception) {
+            logger.error(
+                "An unexpected error occurred while trying to use scooter with id $scooterId: ${e.message}"
+            )
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred")
         }
     }
 }
