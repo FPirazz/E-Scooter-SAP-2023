@@ -3,18 +3,14 @@ package sap.pixelart.apigateway.infrastructure;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.*;
 import io.vertx.ext.web.*;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import sap.pixelart.apigateway.application.*;
-import sap.pixelart.apigateway.domain.*;
 import sap.pixelart.library.PixelArtAsyncAPI;
+import sap.pixelart.library.PixelGridEventObserver;
 
 /**
  * 
