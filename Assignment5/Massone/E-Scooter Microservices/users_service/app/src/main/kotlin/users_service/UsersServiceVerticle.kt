@@ -1,5 +1,7 @@
 package users_service
 
+import io.vertx.circuitbreaker.CircuitBreaker
+import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
@@ -19,21 +21,26 @@ import java.net.InetAddress
 
 class UsersServiceVerticle : AbstractVerticle() {
     private lateinit var databaseClient: DatabaseClient
+    private lateinit var circuitBreaker: CircuitBreaker
 
     override fun start(startPromise: Promise<Void>) {
-        val mongoConfig = JsonObject().put("connection_string", "mongodb://localhost:27017").put("db_name", "Users_Service")
+        val mongoConfig =
+            JsonObject().put("connection_string", "mongodb://localhost:27017").put("db_name", "Users_Service")
         val mongoClient = MongoClient.createShared(vertx, mongoConfig)
         databaseClient = MongoDatabaseClient(mongoClient)
+
+        // Create a CircuitBreaker instance
+        circuitBreaker = CircuitBreaker.create("database-circuit-breaker", vertx, CircuitBreakerOptions())
 
         val router = Router.router(vertx)
         router.route().handler(BodyHandler.create())
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)))
         router.get("/").handler(HomeHandler(databaseClient)::handle)
-        router.get("/register").handler(RegisterHandler(databaseClient)::handle)
-        router.post("/register").handler(RegisterHandler(databaseClient)::handle)
-        router.get("/login").handler(LoginHandler(databaseClient)::handle)
-        router.post("/login").handler(LoginHandler(databaseClient)::handle)
-        router.post("/logout").handler(LogoutHandler()::handle)
+        router.get("/register").handler(RegisterHandler(databaseClient, circuitBreaker)::handle)
+        router.post("/register").handler(RegisterHandler(databaseClient, circuitBreaker)::handle)
+        router.get("/login").handler(LoginHandler(databaseClient, circuitBreaker)::handle)
+        router.post("/login").handler(LoginHandler(databaseClient, circuitBreaker)::handle)
+        router.post("/logout").handler(LogoutHandler(circuitBreaker)::handle)
 
         // Add a custom handler to log request information
         router.route("/scripts/*").handler { routingContext ->
