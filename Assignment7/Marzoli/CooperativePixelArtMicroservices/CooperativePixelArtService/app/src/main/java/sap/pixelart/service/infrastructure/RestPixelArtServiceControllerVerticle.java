@@ -1,18 +1,19 @@
 package sap.pixelart.service.infrastructure;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.*;
-import io.vertx.ext.web.*;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import sap.pixelart.service.application.*;
-import sap.pixelart.service.domain.*;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import sap.pixelart.service.application.PixelArtAPI;
+import sap.pixelart.service.domain.PixelGridEventObserver;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -41,6 +42,10 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		Router router = Router.router(vertx);
 
 		/* configure the HTTP routes following a REST style */
+
+		//E very incoming request will first go through the handleRouteRequest method, which performs the health check.
+		router.route().handler(this::handleRouteRequest);
+		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
 		
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
@@ -60,6 +65,83 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 		logger.log(Level.INFO, "PixelArt Service ready - port: " + port);
 	}
+
+	private void handleRouteRequest(RoutingContext context) {
+		if (healthCheck(context)) {
+			// Proceed with the actual route handling logic
+			context.next();
+		} else {
+			// Respond with a service unavailable status
+			sendServiceUnavailable(context.response());
+		}
+	}
+
+
+	protected boolean healthCheck(RoutingContext context) {
+		JsonObject healthStatus = new JsonObject();
+
+		//Checking for the API to work Properly.
+		// Check 1
+		boolean isCreateBrushSuccessful = executeHealthCheck(() -> createBrush(context));
+		// Check 2:
+		boolean isGetCurrentBrushesSuccessful = executeHealthCheck(() -> getBrushInfo(context));
+		//Check 3:
+		boolean isGetBrushInfoSuccessful = executeHealthCheck(() -> getBrushInfo(context));
+		//Check 4:
+		boolean isDestroyBrushSuccessful = executeHealthCheck(() -> destroyBrush(context));
+		//Check 5:
+		boolean isMoveBrushToSuccessful = executeHealthCheck(() -> moveBrushTo(context));
+		//Check 6:
+		boolean isChangeBrushColorSuccessful = executeHealthCheck(() -> changeBrushColor(context));
+		//Check 7:
+		boolean isSelectPixelSuccessful = executeHealthCheck(() -> selectPixel(context));
+		//Check 8:
+		boolean isGetPixelGridStateSuccessful = executeHealthCheck(() -> getPixelGridState(context));
+
+
+		// Aggiorna lo stato generale in base al risultato delle invocazioni delle varie API.
+		healthStatus.put("createBrush", isCreateBrushSuccessful);
+		healthStatus.put("getCurrentBrushes", isGetCurrentBrushesSuccessful);
+		healthStatus.put("getBrushInfo", isGetBrushInfoSuccessful);
+		healthStatus.put("destroyBrush", isDestroyBrushSuccessful);
+		healthStatus.put("moveBrushTo", isMoveBrushToSuccessful);
+		healthStatus.put("changeBrushColor", isChangeBrushColorSuccessful);
+		healthStatus.put("selectPixel", isSelectPixelSuccessful);
+		healthStatus.put("getPixelGridState", isGetPixelGridStateSuccessful);
+
+
+		// Puoi ripetere lo stesso modello per gli altri metodi...
+
+		// Overall status
+		boolean isSystemHealthy = 	isCreateBrushSuccessful &&
+									isGetCurrentBrushesSuccessful &&
+									isGetBrushInfoSuccessful &&
+									isDestroyBrushSuccessful &&
+									isMoveBrushToSuccessful &&
+									isChangeBrushColorSuccessful &&
+									isSelectPixelSuccessful &&
+									isGetPixelGridStateSuccessful ;
+
+		healthStatus.put("status", isSystemHealthy ? "UP" : "DOWN");
+
+		logger.log(Level.INFO, "API HealthCheck request - " + context.currentRoute().getPath());
+		logger.log(Level.INFO, "Body: " + healthStatus.encodePrettily());
+
+		// Health check is okay
+		return isSystemHealthy;
+	}
+
+	// Metodo di supporto per eseguire un health check generico
+	private boolean executeHealthCheck(Runnable operation) {
+		try {
+			// Esegui l'operazione
+			operation.run();
+			return true; // Se l'operazione ha successo, ritorna true
+		} catch (Exception ex) {
+			return false; // Se c'è un errore, ritorna false
+		}
+	}
+
 
 	/* List of handlers, mapping the API */
 	
@@ -229,6 +311,12 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 	private void sendServiceError(HttpServerResponse response) {
 		response.setStatusCode(500);
+		response.putHeader("content-type", "application/json");
+		response.end();
+	}
+
+	private void sendServiceUnavailable(HttpServerResponse response) {
+		response.setStatusCode(503);
 		response.putHeader("content-type", "application/json");
 		response.end();
 	}

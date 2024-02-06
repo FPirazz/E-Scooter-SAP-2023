@@ -87,4 +87,13 @@ public interface PixelArtAPI  {
 	 * @param l
 	 */
 	void subscribePixelGridEvents(PixelGridEventObserver l);
+
+
+	/**
+	 *
+	 * Subscribe the pixel grid events
+	 *
+	 * @param
+	 */
+	boolean verifyHealth();
 }

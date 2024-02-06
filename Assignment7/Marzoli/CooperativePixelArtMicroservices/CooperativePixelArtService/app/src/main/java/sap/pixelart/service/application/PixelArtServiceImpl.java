@@ -93,4 +93,9 @@ public class PixelArtServiceImpl implements PixelArtAPI {
 	public void subscribePixelGridEvents(PixelGridEventObserver l) {
 		grid.addPixelGridEventListener(l);
 	}
+
+	@Override
+	public boolean verifyHealth() {
+		return false;
+	}
 }
