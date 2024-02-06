@@ -84,7 +84,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		// Check 1
 		boolean isCreateBrushSuccessful = executeHealthCheck(() -> createBrush(context));
 		// Check 2:
-		boolean isGetCurrentBrushesSuccessful = executeHealthCheck(() -> getBrushInfo(context));
+		boolean isGetCurrentBrushesSuccessful = executeHealthCheck(() -> getCurrentBrushes(context));
 		//Check 3:
 		boolean isGetBrushInfoSuccessful = executeHealthCheck(() -> getBrushInfo(context));
 		//Check 4:
@@ -138,6 +138,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			operation.run();
 			return true; // Se l'operazione ha successo, ritorna true
 		} catch (Exception ex) {
+			logger.log(Level.WARNING," Triggered the excepetion: " + ex);
 			return false; // Se c'è un errore, ritorna false
 		}
 	}
