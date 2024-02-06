@@ -39,7 +39,11 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 		Router router = Router.router(vertx);
 
 		/* configure the HTTP routes following a REST style */
-		
+
+		//E very incoming request will first go through the handleRouteRequest method, which performs the health check.
+		router.route().handler(this::handleRouteRequest);
+		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
+
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
 		router.route(HttpMethod.GET, "/api/brushes/:brushId").handler(this::getBrushInfo);
@@ -58,6 +62,41 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 
 		logger.log(Level.INFO, "PixelArt Service ready - port: " + port);
 	}
+
+	private void handleRouteRequest(RoutingContext context) {
+		if (healthCheck(context)) {
+			// Proceed with the actual route handling logic
+			context.next();
+		} else {
+			// Respond with a service unavailable status
+			sendServiceUnavailable(context.response());
+		}
+	}
+
+
+	/* Method called when routing of HealthCheck has been called. */
+	protected boolean healthCheck(RoutingContext context) {
+		JsonObject healthStatus = new JsonObject();
+		// Check 1: Database connectivity
+		//boolean isDatabaseHealthy = checkDatabaseHealth();
+		//healthStatus.put("database", isDatabaseHealthy ? "UP" : "DOWN");
+
+		// Check 2: Other checks...
+
+		// Overall status
+		//boolean isSystemHealthy = isDatabaseHealthy /* && other checks... */;
+		//healthStatus.put("status", isSystemHealthy ? "UP" : "DOWN");
+
+		logger.log(Level.INFO, "{ HealthCheck request } - " + context.currentRoute().getPath());
+		healthStatus.put("status", "UP");
+		logger.log(Level.INFO, "Body: " + healthStatus.encodePrettily());
+
+		//sendReply(context.response(), healthStatus);
+
+		//Health check is okay
+		return true;
+	}
+
 
 	/* List of handlers, mapping the API */
 	
@@ -283,6 +322,12 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 
 	private void sendServiceError(HttpServerResponse response) {
 		response.setStatusCode(500);
+		response.putHeader("content-type", "application/json");
+		response.end();
+	}
+
+	private void sendServiceUnavailable(HttpServerResponse response) {
+		response.setStatusCode(503);
 		response.putHeader("content-type", "application/json");
 		response.end();
 	}
