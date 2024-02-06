@@ -43,7 +43,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 		/* configure the HTTP routes following a REST style */
 
-		//E very incoming request will first go through the handleRouteRequest method, which performs the health check.
+		//Every incoming request will first go through the handleRouteRequest method, which performs the health check.
 		router.route().handler(this::handleRouteRequest);
 		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
 		
@@ -80,7 +80,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 	protected boolean healthCheck(RoutingContext context) {
 		JsonObject healthStatus = new JsonObject();
 
-		//Checking for the API to work Properly.
+		//Checking for the API methods to work Properly.
 		// Check 1
 		boolean isCreateBrushSuccessful = executeHealthCheck(() -> createBrush(context));
 		// Check 2:

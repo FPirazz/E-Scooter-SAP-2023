@@ -1,16 +1,19 @@
 package sap.pixelart.apigateway.infrastructure;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.*;
-import io.vertx.ext.web.*;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import sap.pixelart.library.PixelArtAsyncAPI;
 import sap.pixelart.library.PixelGridEventObserver;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -74,27 +77,71 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 	}
 
 
-	/* Method called when routing of HealthCheck has been called. */
 	protected boolean healthCheck(RoutingContext context) {
 		JsonObject healthStatus = new JsonObject();
-		// Check 1: Database connectivity
-		//boolean isDatabaseHealthy = checkDatabaseHealth();
-		//healthStatus.put("database", isDatabaseHealthy ? "UP" : "DOWN");
 
-		// Check 2: Other checks...
+		//Checking for the API methods to work Properly.
+		// Check 1
+		boolean isCreateBrushSuccessful = executeHealthCheck(() -> createBrush(context));
+		// Check 2:
+		boolean isGetCurrentBrushesSuccessful = executeHealthCheck(() -> getCurrentBrushes(context));
+		//Check 3:
+		boolean isGetBrushInfoSuccessful = executeHealthCheck(() -> getBrushInfo(context));
+		//Check 4:
+		boolean isDestroyBrushSuccessful = executeHealthCheck(() -> destroyBrush(context));
+		//Check 5:
+		boolean isMoveBrushToSuccessful = executeHealthCheck(() -> moveBrushTo(context));
+		//Check 6:
+		boolean isChangeBrushColorSuccessful = executeHealthCheck(() -> changeBrushColor(context));
+		//Check 7:
+		boolean isSelectPixelSuccessful = executeHealthCheck(() -> selectPixel(context));
+		//Check 8:
+		boolean isGetPixelGridStateSuccessful = executeHealthCheck(() -> getPixelGridState(context));
+
+
+		// Aggiorna lo stato generale in base al risultato delle invocazioni delle varie API.
+		healthStatus.put("createBrush", isCreateBrushSuccessful);
+		healthStatus.put("getCurrentBrushes", isGetCurrentBrushesSuccessful);
+		healthStatus.put("getBrushInfo", isGetBrushInfoSuccessful);
+		healthStatus.put("destroyBrush", isDestroyBrushSuccessful);
+		healthStatus.put("moveBrushTo", isMoveBrushToSuccessful);
+		healthStatus.put("changeBrushColor", isChangeBrushColorSuccessful);
+		healthStatus.put("selectPixel", isSelectPixelSuccessful);
+		healthStatus.put("getPixelGridState", isGetPixelGridStateSuccessful);
 
 		// Overall status
-		//boolean isSystemHealthy = isDatabaseHealthy /* && other checks... */;
-		//healthStatus.put("status", isSystemHealthy ? "UP" : "DOWN");
+		boolean isSystemHealthy = 	isCreateBrushSuccessful &&
+				isGetCurrentBrushesSuccessful &&
+				isGetBrushInfoSuccessful &&
+				isDestroyBrushSuccessful &&
+				isMoveBrushToSuccessful &&
+				isChangeBrushColorSuccessful &&
+				isSelectPixelSuccessful &&
+				isGetPixelGridStateSuccessful ;
 
-		logger.log(Level.INFO, "{ HealthCheck request } - " + context.currentRoute().getPath());
-		healthStatus.put("status", "UP");
+		healthStatus.put("status", isSystemHealthy ? "UP" : "DOWN");
+
+		logger.log(Level.INFO, "API HealthCheck request - " + context.currentRoute().getPath());
 		logger.log(Level.INFO, "Body: " + healthStatus.encodePrettily());
 
-		//sendReply(context.response(), healthStatus);
+		// Health check is okay
+		return isSystemHealthy;
+	}
 
-		//Health check is okay
-		return true;
+	// Metodo di supporto per eseguire un health check generico
+	private boolean executeHealthCheck(Runnable operation) {
+		try {
+			// Esegui l'operazione
+			operation.run();
+			return true; // Se l'operazione ha successo, ritorna true
+		} catch (IllegalStateException ex) {
+			// Handle the case where the response has already been sent which may happen since i'm invoking the API
+			// and is not part of the final purpose of the Health System checking.
+			return true;
+		} catch (Exception ex) {
+			logger.log(Level.WARNING," Triggered the excepetion: " + ex);
+			return false; // Se c'è un errore, ritorna false
+		}
 	}
 
 
