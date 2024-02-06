@@ -109,9 +109,6 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		healthStatus.put("selectPixel", isSelectPixelSuccessful);
 		healthStatus.put("getPixelGridState", isGetPixelGridStateSuccessful);
 
-
-		// Puoi ripetere lo stesso modello per gli altri metodi...
-
 		// Overall status
 		boolean isSystemHealthy = 	isCreateBrushSuccessful &&
 									isGetCurrentBrushesSuccessful &&
@@ -137,6 +134,10 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			// Esegui l'operazione
 			operation.run();
 			return true; // Se l'operazione ha successo, ritorna true
+		} catch (IllegalStateException ex) {
+			// Handle the case where the response has already been sent which may happen since i'm invoking the API
+			// and is not part of the final purpose of the Health System checking.
+			return true;
 		} catch (Exception ex) {
 			logger.log(Level.WARNING," Triggered the excepetion: " + ex);
 			return false; // Se c'è un errore, ritorna false
