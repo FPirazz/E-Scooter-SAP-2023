@@ -45,6 +45,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 		//Every incoming request will first go through the handleRouteRequest method, which performs the health check.
 		router.route().handler(this::handleRouteRequest);
+		//If you want to check manually through localhost decomment this line of code.
 		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
 		
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
