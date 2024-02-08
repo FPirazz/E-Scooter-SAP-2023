@@ -1,10 +1,12 @@
 package sap.pixelart.service.infrastructure;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import sap.pixelart.service.application.PixelArtAPI;
+import sap.pixelart.service.domain.PixelGridEventObserver;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import io.vertx.core.Vertx;
-import sap.pixelart.service.application.*;
-import sap.pixelart.service.domain.PixelGridEventObserver;
 
 /**
  * 
@@ -26,7 +28,9 @@ public class RestPixelArtServiceController implements PixelGridEventObserver {
 		
 	public void init(PixelArtAPI pixelArtAPI) {
     	Vertx vertx = Vertx.vertx();
-		this.service = new RestPixelArtServiceControllerVerticle(port, pixelArtAPI);
+		//Mi collego al bus per comunicare col microservizio di log.
+		EventBus eventBus = vertx.eventBus();
+		this.service = new RestPixelArtServiceControllerVerticle(port, pixelArtAPI, eventBus);
 		vertx.deployVerticle(service);	
 		pixelArtAPI.subscribePixelGridEvents(this);
 	}

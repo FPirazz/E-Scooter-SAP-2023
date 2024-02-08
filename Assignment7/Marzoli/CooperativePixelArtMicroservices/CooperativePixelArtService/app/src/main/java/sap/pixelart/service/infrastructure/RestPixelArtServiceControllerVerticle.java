@@ -29,10 +29,12 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 	private PixelArtAPI pixelArtAPI;
 	static Logger logger = Logger.getLogger("[PixelArt Service]");
 	static String PIXEL_GRID_CHANNEL = "pixel-grid-events";
+	private EventBus eventBus;
 
-	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI) {
+	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI, EventBus eventBus) {
 		this.port = port;
 		this.pixelArtAPI = appAPI;
+		this.eventBus = eventBus;
 		logger.setLevel(Level.INFO);
 	}
 
@@ -65,6 +67,12 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		.listen(port);
 
 		logger.log(Level.INFO, "PixelArt Service ready - port: " + port);
+
+		/* Effettuo un log da mandare al microservizio "DistributedLogService" */
+		JsonObject logEntryJson = 	new JsonObject()
+									.put("source", "MicroserviceXXXXX")
+									.put("message", "Log message from MicroserviceXXXXX");
+		eventBus.publish("log.entry", logEntryJson);
 	}
 
 	private void handleRouteRequest(RoutingContext context) {
