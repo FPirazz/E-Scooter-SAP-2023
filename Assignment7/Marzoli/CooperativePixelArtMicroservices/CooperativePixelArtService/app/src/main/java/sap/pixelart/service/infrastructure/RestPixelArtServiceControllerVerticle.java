@@ -1,10 +1,9 @@
 package sap.pixelart.service.infrastructure;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -29,26 +28,35 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 	private PixelArtAPI pixelArtAPI;
 	static Logger logger = Logger.getLogger("[PixelArt Service]");
 	static String PIXEL_GRID_CHANNEL = "pixel-grid-events";
-	private EventBus eventBus;
+	private HttpClient client;
 
-	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI, EventBus eventBus) {
+	private Vertx vertx;
+
+
+	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI) {
 		this.port = port;
 		this.pixelArtAPI = appAPI;
-		this.eventBus = eventBus;
 		logger.setLevel(Level.INFO);
+		this.vertx = Vertx.vertx();
+
+		HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost("localhost")
+				.setDefaultPort(port);
+		this.client = vertx.createHttpClient(options);
 	}
 
 	public void start() {
+
 		logger.log(Level.INFO, "PixelArt Service initializing...");
 		HttpServer server = vertx.createHttpServer();
 		Router router = Router.router(vertx);
 
 		/* configure the HTTP routes following a REST style */
 
-		//Every incoming request will first go through the handleRouteRequest method, which performs the health check.
-		router.route().handler(this::handleRouteRequest);
-		//If you want to check manually through localhost decomment this line of code.
-		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
+		// 1. Every incoming request will first go through the handleRouteRequest method, which performs the health check.
+		// router.route().handler(this::handleRouteRequest);
+		// 2. If you want to check manually through localhost decomment this line of code.
+		router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
 		
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
@@ -72,8 +80,32 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		JsonObject logEntryJson = 	new JsonObject()
 									.put("source", "MicroserviceXXXXX")
 									.put("message", "Log message from MicroserviceXXXXX");
-		eventBus.publish("log.entry", logEntryJson);
+		sendLogRequest(logEntryJson);
 	}
+
+	// This method implements the HTTP request to make in order to send a log to the microservice "DistributedLogServiced".
+	private void sendLogRequest(JsonObject logEntryJson) {
+
+		// Perform asynchronous operation
+		HttpClientRequest request = (HttpClientRequest) client.request(HttpMethod.POST, "/api/log");
+		request.putHeader("Content-Type", "application/json");
+
+		// Convert JsonObject to JSON string
+		String jsonBody = logEntryJson.encode();
+
+		// Add 'Content-Length' header
+		request.putHeader("Content-Length", String.valueOf(jsonBody.length()));
+
+		// Write JSON body to the request
+		request.write(jsonBody);
+
+		//Send the request.
+		request.send();
+
+		// End the request
+		request.end();
+	}
+
 
 	private void handleRouteRequest(RoutingContext context) {
 		if (healthCheck(context)) {
@@ -152,6 +184,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			return false; // Se c'è un errore, ritorna false
 		}
 	}
+
 
 
 	/* List of handlers, mapping the API */

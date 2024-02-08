@@ -1,8 +1,6 @@
 package sap.pixelart.service.infrastructure;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
@@ -31,13 +29,11 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 	private int port;
 	private DistributedLogAPI distributedLogAPI;
 	static Logger logger = Logger.getLogger("[Distributed Log]");
-	private EventBus eventBus;
 	private List<LogEntry> logEntries = new LinkedList<>();
 
-	public RestDistributedLogControllerVerticle(int port, DistributedLogAPI appAPI, EventBus eventBus) {
+	public RestDistributedLogControllerVerticle(int port, DistributedLogAPI appAPI) {
 		this.port = port;
 		this.distributedLogAPI = appAPI;
-		this.eventBus = eventBus;
 		logger.setLevel(Level.INFO);
 	}
 
@@ -46,14 +42,12 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		HttpServer server = vertx.createHttpServer();
 		Router router = Router.router(vertx);
 
-		/* configure an event bus event */
-		eventBus.consumer("log.entry", this::handleLogEntry);
 
 		/* configure the HTTP routes following a REST style */
-		router.route(HttpMethod.GET, "/api/log").handler(this::mergeAllLogs);
+		router.route(HttpMethod.GET, "/api/log").handler(this::sendLogsList);
+		router.route(HttpMethod.POST, "/api/log").handler(this::mergeAllLogs);
 
 		/* start the server */
-		
 		server
 		.requestHandler(router)
 		.listen(port);
@@ -61,22 +55,8 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		logger.log(Level.INFO, "Distributed Log  - port: " + port);
 	}
 
-	private void handleLogEntry(Message<JsonObject> message) {
-		JsonObject logEntryJson = message.body();
-		// Converte il JsonObject in un oggetto LogEntry e lo aggiunge alla lista logEntries
-		LogEntry logEntry = convertJsonToLogEntry(logEntryJson);
-		logEntries.add(logEntry);
-	}
+	private void sendLogsList(RoutingContext routingContext) {
 
-	private LogEntry convertJsonToLogEntry(JsonObject logEntryJson) {
-		String source = logEntryJson.getString("source", "");
-		String message = logEntryJson.getString("message", "");
-
-		return new LogEntry(source, message);
-	}
-
-
-	private void mergeAllLogs(RoutingContext routingContext) {
 		JsonArray logsArray = new JsonArray();
 
 		for (LogEntry logEntry : logEntries) {
@@ -88,6 +68,29 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 
 		JsonObject logsJson = new JsonObject().put("logs", logsArray);
 		sendReply(routingContext.response(), logsJson);
+
+		logger.log(Level.FINE,"La Lista ora appare come: " + logEntries);
+		System.out.println("SONO DENTRO SENDLOGSLIST (GET) /API/LOG E QUESTA E' LA LISTA: "+ logEntries);
+	}
+
+
+	private void mergeAllLogs(RoutingContext routingContext) {
+		// Esegui la logica per gestire un nuovo log entry
+		JsonObject logEntryJson = routingContext.getBodyAsJson();
+		LogEntry logEntry = convertJsonToLogEntry(logEntryJson);
+		logEntries.add(logEntry);
+		logger.log(Level.INFO, "ELEMENTO AGGIUNTO NELLA LISTA");
+		// Rispondi con un messaggio di successo
+		JsonObject responseJson = new JsonObject().put("message", "Log entry added successfully");
+		sendReply(routingContext.response(), responseJson);
+		System.out.println("SONO DENTRO mergeALL (POST) /API/LOG E QUESTA E' LA LISTA: "+ logEntries);
+	}
+
+	private LogEntry convertJsonToLogEntry(JsonObject logEntryJson) {
+		String source = logEntryJson.getString("source", "");
+		String message = logEntryJson.getString("message", "");
+
+		return new LogEntry(source, message);
 	}
 
 

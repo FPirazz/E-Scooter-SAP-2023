@@ -1,7 +1,6 @@
 package sap.pixelart.service.infrastructure;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 import sap.pixelart.service.application.DistributedLogAPI;
 
 import java.util.logging.Logger;
@@ -26,9 +25,7 @@ public class RestDistributedLogController {
 		
 	public void init(DistributedLogAPI distributedLogAPI) {
     	Vertx vertx = Vertx.vertx();
-		//Faccio partire un eventbus con cui iniziallizzo un canale per la ricezione dei log.
-		EventBus eventBus = vertx.eventBus();
-		this.service = new RestDistributedLogControllerVerticle(port, distributedLogAPI, eventBus);
+		this.service = new RestDistributedLogControllerVerticle(port, distributedLogAPI);
 		vertx.deployVerticle(service);
 	}
 }

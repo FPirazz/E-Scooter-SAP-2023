@@ -43,10 +43,10 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 
 		/* configure the HTTP routes following a REST style */
 
-		//E very incoming request will first go through the handleRouteRequest method, which performs the health check.
-		router.route().handler(this::handleRouteRequest);
-		//If you want to check manually through localhost decomment this line of code.
-		//router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
+		//1. E very incoming request will first go through the handleRouteRequest method, which performs the health check.
+		//router.route().handler(this::handleRouteRequest);
+		//2. If you want to check manually through localhost decomment this line of code.
+		router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
 
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
