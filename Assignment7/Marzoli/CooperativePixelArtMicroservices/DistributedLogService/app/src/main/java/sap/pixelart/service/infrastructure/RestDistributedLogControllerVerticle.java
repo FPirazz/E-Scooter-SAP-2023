@@ -56,13 +56,22 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		logger.log(Level.INFO, "Distributed Log  - port: " + port);
 	}
 
-	private void printLogMessage(RoutingContext routingContext)
-	{
+	private void printLogMessage(RoutingContext routingContext) {
+		// Ottieni il contenuto del messaggio dal corpo della richiesta
+		routingContext.request().bodyHandler(buffer -> {
+			String message = buffer.toString();
 
-		System.out.println("SIIIIIIIIIIIIII!!!!!!!! SEI CONNESSO VEDI?!! ");
-		JsonObject responseJson = new JsonObject().put("message", "Log entry added successfully");
-		sendReply(routingContext.response(), responseJson);
+			System.out.println("Messaggio ricevuto: " + message);
+
+			// Puoi fare altre operazioni con il messaggio qui...
+
+			// Invia una risposta al client
+			JsonObject responseJson = new JsonObject().put("status", "Messaggio ricevuto con successo");
+			sendReply(routingContext.response(), responseJson);
+		});
 	}
+
+
 
 	private void sendLogsList(RoutingContext routingContext) {
 

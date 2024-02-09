@@ -266,17 +266,9 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					// Converti l'oggetto JSON in una stringa e invialo come corpo della richiesta
 					String payload = logData.encodePrettily();
 					request.putHeader("content-length", "" + payload.length());
+
 					request.write(payload);
 
-					// Gestisci la risposta
-/*					request.response().onSuccess(response -> {
-
-						p.complete();
-
-					}).onFailure(error -> {
-						System.err.println("[Log] Error in response: " + error.getMessage());
-						p.fail(error.getMessage());
-					});*/
 					System.out.println("[Log] Received response with status code " + request.getURI());
 					// Invia la richiesta
 					request.end();
