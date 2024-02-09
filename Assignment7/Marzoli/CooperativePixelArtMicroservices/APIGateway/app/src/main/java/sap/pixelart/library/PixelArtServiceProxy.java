@@ -51,7 +51,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 			p.fail(f.getMessage());
 		});
 		//Effettuo un log di prova.
-		sendLogRequest("Ho APPENA FINITO DI ESEGUIRE CREATE BRUSH!");
+		sendLogRequest("[API Gateway] - Finito CreateBrush!");
 		return p.future();
 	}
 
@@ -163,6 +163,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Finito SelectPixel!");
 		return p.future();
 	}
 
@@ -268,6 +269,10 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					request.putHeader("content-length", "" + payload.length());
 
 					request.write(payload);
+
+					request.response().onSuccess(resp -> {
+						p.complete();
+					});
 
 					System.out.println("[Log] Received response with status code " + request.getURI());
 					// Invia la richiesta

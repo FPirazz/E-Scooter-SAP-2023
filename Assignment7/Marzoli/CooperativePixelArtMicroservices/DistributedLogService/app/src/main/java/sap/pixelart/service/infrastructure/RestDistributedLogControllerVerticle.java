@@ -11,6 +11,7 @@ import io.vertx.ext.web.RoutingContext;
 import sap.pixelart.service.application.DistributedLogAPI;
 import sap.pixelart.service.domain.LogEntry;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -30,6 +31,8 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 	private DistributedLogAPI distributedLogAPI;
 	static Logger logger = Logger.getLogger("[Distributed Log]");
 	private List<LogEntry> logEntries = new LinkedList<>();
+	private List<String> logMessagesList = new ArrayList<>(); // Lista di Log Messages.
+
 
 	public RestDistributedLogControllerVerticle(int port, DistributedLogAPI appAPI) {
 		this.port = port;
@@ -60,10 +63,8 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		// Ottieni il contenuto del messaggio dal corpo della richiesta
 		routingContext.request().bodyHandler(buffer -> {
 			String message = buffer.toString();
-
+			logMessagesList.add(message);
 			System.out.println("Messaggio ricevuto: " + message);
-
-			// Puoi fare altre operazioni con il messaggio qui...
 
 			// Invia una risposta al client
 			JsonObject responseJson = new JsonObject().put("status", "Messaggio ricevuto con successo");
@@ -71,25 +72,19 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		});
 	}
 
-
-
 	private void sendLogsList(RoutingContext routingContext) {
-
 		JsonArray logsArray = new JsonArray();
 
-		for (LogEntry logEntry : logEntries) {
-			JsonObject logJson = new JsonObject()
-					.put("source", logEntry.getSource())
-					.put("message", logEntry.getMessage());
+		for (String message : logMessagesList) {
+			JsonObject logJson = new JsonObject().put("content:", message);
 			logsArray.add(logJson);
 		}
 
 		JsonObject logsJson = new JsonObject().put("logs", logsArray);
-		sendReply(routingContext.response(), logsJson);
-
-		logger.log(Level.FINE,"La Lista ora appare come: " + logEntries);
-		System.out.println("SONO DENTRO SENDLOGSLIST (GET) /API/LOG E QUESTA E' LA LISTA: "+ logEntries);
+		String prettyLogs = logsJson.encodePrettily();
+		routingContext.response().end(prettyLogs);
 	}
+
 
 
 	private void mergeAllLogs(RoutingContext routingContext) {
