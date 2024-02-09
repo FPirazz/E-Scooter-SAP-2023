@@ -30,6 +30,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					.setDefaultHost(host)
 					.setDefaultPort(port);
 		client = vertx.createHttpClient(options);
+		sendLogRequest("[API Gateway] - Init of the PixelArtServiceProxy.");
 	}
 
 	public Future<String> createBrush() {	
@@ -51,7 +52,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 			p.fail(f.getMessage());
 		});
 		//Effettuo un log di prova.
-		sendLogRequest("[API Gateway] - Finito CreateBrush!");
+		sendLogRequest("[API Gateway] - Terminated CreateBrush!");
 		return p.future();
 	}
 
@@ -74,6 +75,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getCurrentBrushes!");
 		return p.future();
 	}
 
@@ -96,6 +98,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getBrushInfo!");
 		return p.future();
 	}
 
@@ -118,6 +121,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getPixelGridState!");
 		return p.future();
 	}
 
@@ -144,6 +148,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated moveBrushTo!");
 		return p.future();
 	}
 
@@ -163,7 +168,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
-		sendLogRequest("[API Gateway] - Finito SelectPixel!");
+		sendLogRequest("[API Gateway] - Terminated SelectPixel!");
 		return p.future();
 	}
 
@@ -189,6 +194,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated changeBrushColor!");
 		return p.future();
 	}
 
@@ -210,6 +216,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated destroyBrush!");
 		return p.future();
 	}
 
@@ -250,7 +257,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					p.fail(res.cause());
 				}
 		});
-		
+		sendLogRequest("[API Gateway] - Terminated subscribePixelGridEvent!");
 		return p.future();
 	}
 
