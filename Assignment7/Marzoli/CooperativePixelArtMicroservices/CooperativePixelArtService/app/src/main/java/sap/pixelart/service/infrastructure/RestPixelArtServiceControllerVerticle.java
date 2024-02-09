@@ -1,6 +1,8 @@
 package sap.pixelart.service.infrastructure;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.*;
@@ -43,6 +45,8 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				.setDefaultHost("localhost")
 				.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
+
+		sendLogRequest("[CooperativePixelArtService] - Init the RestPixelArtServiceControllerVerticle!");
 	}
 
 	public void start() {
@@ -76,37 +80,9 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 		logger.log(Level.INFO, "PixelArt Service ready - port: " + port);
 
-		/* Effettuo un log da mandare al microservizio "DistributedLogService" */
-		JsonObject logEntryJson = 	new JsonObject()
-									.put("source", "MicroserviceXXXXX")
-									.put("message", "Log message from MicroserviceXXXXX");
-		//sendLogRequest(logEntryJson);
-		//sendLogRequest("HO CAZZO FATTO PARTIRE STO MERDA DI SERVER E ORA E' COLLEGATO DIO BUONO!");
 	}
 
-	// This method implements the HTTP request to make in order to send a log to the microservice "DistributedLogServiced".
-	/*private void sendLogRequest(JsonObject logEntryJson) {
-		// Convert JsonObject to JSON string
-		String jsonBody = logEntryJson.encode();
-
-		// Perform asynchronous operation
-		HttpClientRequest request = (HttpClientRequest) client.request(HttpMethod.POST, "/api/log/"+jsonBody);
-		request.putHeader("Content-Type", "application/json");
-
-		// Add 'Content-Length' header
-		request.putHeader("Content-Length", String.valueOf(jsonBody.length()));
-
-		// Write JSON body to the request
-		request.write(jsonBody);
-
-		//Send the request.
-		request.send();
-
-		// End the request
-		request.end();
-	}*/
-
-
+	/* Aux Method */
 	private void handleRouteRequest(RoutingContext context) {
 		if (healthCheck(context)) {
 			// Proceed with the actual route handling logic
@@ -200,6 +176,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated createBrush!");
 	}
 
 	protected void getCurrentBrushes(RoutingContext context) {
@@ -213,6 +190,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated getCurrentBrushes!");
 	}
 
 	protected void getBrushInfo(RoutingContext context) {
@@ -226,6 +204,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated getBrushInfo!");
 	}
 
 	protected void moveBrushTo(RoutingContext context) {
@@ -245,6 +224,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				sendServiceError(context.response());
 			}
 		});
+		sendLogRequest("[CooperativePixelArtService] - Terminated moveBrushTo!");
 	}
 
 	protected void changeBrushColor(RoutingContext context) {
@@ -262,6 +242,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				sendServiceError(context.response());
 			}
 		});
+		sendLogRequest("[CooperativePixelArtService] - Terminated changeBrushColor!");
 	}
 
 	protected void selectPixel(RoutingContext context) {
@@ -274,6 +255,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated selectPixel!");
 	}
 
 	protected void destroyBrush(RoutingContext context) {
@@ -286,6 +268,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated destroyBrush!");
 	}
 
 	protected void getPixelGridState(RoutingContext context) {
@@ -298,6 +281,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		} catch (Exception ex) {
 			sendServiceError(context.response());
 		}
+		sendLogRequest("[CooperativePixelArtService] - Terminated getPixelGridState!");
 	}
 
 	/* Handling subscribers using web sockets */
@@ -322,6 +306,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				logger.log(Level.INFO, "PixelGrid subscription refused.");
 				webSocket.reject();
 			}
+			sendLogRequest("[CooperativePixelArtService] - Terminated handleEventSubscription!");
 		});
 	}
 	
@@ -337,6 +322,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		obj.put("y", y);
 		obj.put("color", color);
 		eb.publish(PIXEL_GRID_CHANNEL, obj);
+		sendLogRequest("[CooperativePixelArtService] - Terminated pixelColorChanged!");
 	}
 
 	/* Aux methods */
@@ -363,6 +349,38 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		response.setStatusCode(503);
 		response.putHeader("content-type", "application/json");
 		response.end();
+	}
+
+	//Part of the Pattern for the Distributed Log.
+	private Future<Void> sendLogRequest(String messageLog) {
+		Promise<Void> p = Promise.promise();
+
+		JsonObject logData = new JsonObject().put("message", messageLog);
+		client
+				.request(HttpMethod.POST, 9003, "localhost", "/api/log")
+				.onSuccess(request -> {
+					// Imposta l'header content-type
+					request.putHeader("content-type", "application/json");
+
+					// Converti l'oggetto JSON in una stringa e invialo come corpo della richiesta
+					String payload = logData.encodePrettily();
+					request.putHeader("content-length", "" + payload.length());
+
+					request.write(payload);
+
+					request.response().onSuccess(resp -> {
+						p.complete();
+					});
+
+					System.out.println("[Log] Received response with status code " + request.getURI());
+					// Invia la richiesta
+					request.end();
+				})
+				.onFailure(f -> {
+					p.fail(f.getMessage());
+				});
+
+		return p.future();
 	}
 
 }
