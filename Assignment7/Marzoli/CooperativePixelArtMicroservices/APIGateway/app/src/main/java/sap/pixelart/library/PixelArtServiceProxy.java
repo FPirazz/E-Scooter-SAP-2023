@@ -258,7 +258,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 
 		JsonObject logData = new JsonObject().put("message", messageLog);
 		client
-				.request(HttpMethod.POST, "/api/log")
+				.request(HttpMethod.POST, 9003, "localhost", "/api/log")
 				.onSuccess(request -> {
 					// Imposta l'header content-type
 					request.putHeader("content-type", "application/json");
@@ -269,14 +269,15 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					request.write(payload);
 
 					// Gestisci la risposta
-					request.response().onSuccess(response -> {
-						System.out.println("[Log] Received response with status code " + response.statusCode());
+/*					request.response().onSuccess(response -> {
+
 						p.complete();
+
 					}).onFailure(error -> {
 						System.err.println("[Log] Error in response: " + error.getMessage());
 						p.fail(error.getMessage());
-					});
-
+					});*/
+					System.out.println("[Log] Received response with status code " + request.getURI());
 					// Invia la richiesta
 					request.end();
 				})
