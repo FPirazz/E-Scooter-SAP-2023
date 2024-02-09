@@ -1,7 +1,6 @@
 package sap.pixelart.service.infrastructure;
 
 import io.vertx.core.Vertx;
-import sap.pixelart.service.application.DistributedLogAPI;
 
 import java.util.logging.Logger;
 
@@ -23,9 +22,9 @@ public class RestDistributedLogController {
 		this.port = port;
 	}
 		
-	public void init(DistributedLogAPI distributedLogAPI) {
+	public void init() {
     	Vertx vertx = Vertx.vertx();
-		this.service = new RestDistributedLogControllerVerticle(port, distributedLogAPI);
+		this.service = new RestDistributedLogControllerVerticle(port);
 		vertx.deployVerticle(service);
 	}
 }
