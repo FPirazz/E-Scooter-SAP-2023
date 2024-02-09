@@ -261,6 +261,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		return p.future();
 	}
 
+	//Part of the Pattern for the Distributed Log.
 	private Future<Void> sendLogRequest(String messageLog) {
 		Promise<Void> p = Promise.promise();
 
