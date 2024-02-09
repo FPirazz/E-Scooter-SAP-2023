@@ -25,4 +25,5 @@ public interface PixelArtAsyncAPI  {
 	Future<JsonObject> getPixelGridState();
 	
 	Future<JsonObject> subscribePixelGridEvents(PixelGridEventObserver l);
+
 }

@@ -45,7 +45,8 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 
 		/* configure the HTTP routes following a REST style */
 		router.route(HttpMethod.GET, "/api/log").handler(this::sendLogsList);
-		router.route(HttpMethod.POST, "/api/log").handler(this::mergeAllLogs);
+		//router.route(HttpMethod.POST, "/api/log/:jsonBody").handler(this::mergeAllLogs);
+		router.route(HttpMethod.POST, "/api/log").handler(this::printLogMessage);
 
 		/* start the server */
 		server
@@ -53,6 +54,14 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 		.listen(port);
 
 		logger.log(Level.INFO, "Distributed Log  - port: " + port);
+	}
+
+	private void printLogMessage(RoutingContext routingContext)
+	{
+
+		System.out.println("SIIIIIIIIIIIIII!!!!!!!! SEI CONNESSO VEDI?!! ");
+		JsonObject responseJson = new JsonObject().put("message", "Log entry added successfully");
+		sendReply(routingContext.response(), responseJson);
 	}
 
 	private void sendLogsList(RoutingContext routingContext) {
@@ -76,7 +85,8 @@ public class RestDistributedLogControllerVerticle extends AbstractVerticle {
 
 	private void mergeAllLogs(RoutingContext routingContext) {
 		// Esegui la logica per gestire un nuovo log entry
-		JsonObject logEntryJson = routingContext.getBodyAsJson();
+		JsonObject logEntryJson = new JsonObject();
+		logEntryJson.put("jsonBody", routingContext.pathParam("jsonBody"));
 		LogEntry logEntry = convertJsonToLogEntry(logEntryJson);
 		logEntries.add(logEntry);
 		logger.log(Level.INFO, "ELEMENTO AGGIUNTO NELLA LISTA");

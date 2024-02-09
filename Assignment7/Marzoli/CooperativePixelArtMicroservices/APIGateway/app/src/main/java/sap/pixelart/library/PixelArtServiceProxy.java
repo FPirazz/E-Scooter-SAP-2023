@@ -50,6 +50,8 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		//Effettuo un log di prova.
+		sendLogRequest("Ho APPENA FINITO DI ESEGUIRE CREATE BRUSH!");
 		return p.future();
 	}
 
@@ -250,4 +252,39 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		
 		return p.future();
 	}
+
+	private Future<Void> sendLogRequest(String messageLog) {
+		Promise<Void> p = Promise.promise();
+
+		JsonObject logData = new JsonObject().put("message", messageLog);
+		client
+				.request(HttpMethod.POST, "/api/log")
+				.onSuccess(request -> {
+					// Imposta l'header content-type
+					request.putHeader("content-type", "application/json");
+
+					// Converti l'oggetto JSON in una stringa e invialo come corpo della richiesta
+					String payload = logData.encodePrettily();
+					request.putHeader("content-length", "" + payload.length());
+					request.write(payload);
+
+					// Gestisci la risposta
+					request.response().onSuccess(response -> {
+						System.out.println("[Log] Received response with status code " + response.statusCode());
+						p.complete();
+					}).onFailure(error -> {
+						System.err.println("[Log] Error in response: " + error.getMessage());
+						p.fail(error.getMessage());
+					});
+
+					// Invia la richiesta
+					request.end();
+				})
+				.onFailure(f -> {
+					p.fail(f.getMessage());
+				});
+
+		return p.future();
+	}
+
 }

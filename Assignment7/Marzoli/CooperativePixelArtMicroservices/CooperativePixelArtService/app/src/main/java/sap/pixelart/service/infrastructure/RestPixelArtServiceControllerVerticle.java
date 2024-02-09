@@ -80,18 +80,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		JsonObject logEntryJson = 	new JsonObject()
 									.put("source", "MicroserviceXXXXX")
 									.put("message", "Log message from MicroserviceXXXXX");
-		sendLogRequest(logEntryJson);
+		//sendLogRequest(logEntryJson);
+		//sendLogRequest("HO CAZZO FATTO PARTIRE STO MERDA DI SERVER E ORA E' COLLEGATO DIO BUONO!");
 	}
 
 	// This method implements the HTTP request to make in order to send a log to the microservice "DistributedLogServiced".
-	private void sendLogRequest(JsonObject logEntryJson) {
-
-		// Perform asynchronous operation
-		HttpClientRequest request = (HttpClientRequest) client.request(HttpMethod.POST, "/api/log");
-		request.putHeader("Content-Type", "application/json");
-
+	/*private void sendLogRequest(JsonObject logEntryJson) {
 		// Convert JsonObject to JSON string
 		String jsonBody = logEntryJson.encode();
+
+		// Perform asynchronous operation
+		HttpClientRequest request = (HttpClientRequest) client.request(HttpMethod.POST, "/api/log/"+jsonBody);
+		request.putHeader("Content-Type", "application/json");
 
 		// Add 'Content-Length' header
 		request.putHeader("Content-Length", String.valueOf(jsonBody.length()));
@@ -104,7 +104,7 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 		// End the request
 		request.end();
-	}
+	}*/
 
 
 	private void handleRouteRequest(RoutingContext context) {
