@@ -13,7 +13,7 @@ import org.springframework.web.servlet.ModelAndView
 
 @RestController
 class ScooterController(
-    private val scooterRepository: ScooterRepository,
+    private val scooterService: ScooterService,
     private val circuitBreaker: CircuitBreaker,
 ) {
     private val logger = LoggerFactory.getLogger(ScooterController::class.java)
@@ -27,7 +27,7 @@ class ScooterController(
                 if (scooter.name == null || scooter.location == null) {
                     ModelAndView("escooter_error")
                 } else {
-                    scooterRepository.save(scooter)
+                    scooterService.createScooter(scooter)
                     ModelAndView("escooter_created")
                 }
             }
@@ -46,18 +46,16 @@ class ScooterController(
     @GetMapping("/all_scooters/")
     fun getAllScooters(): List<Scooter> {
         return circuitBreaker.executeSupplier {
-            scooterRepository.findAll()
+            scooterService.getAllScooters()
         }
     }
-
 
     @GetMapping("/get_scooter_state/{scooterId}/")
     fun getScooterState(@PathVariable scooterId: String): ResponseEntity<ScooterStateResponse> {
         return try {
             circuitBreaker.executeSupplier {
-                val scooterOptional = scooterRepository.findById(scooterId)
-                if (scooterOptional.isPresent) {
-                    val scooter = scooterOptional.get()
+                val scooter = scooterService.getScooterState(scooterId)
+                if (scooter != null) {
                     ResponseEntity.ok(ScooterStateResponse(scooter.state ?: "N/A"))
                 } else {
                     ResponseEntity.status(HttpStatus.NOT_FOUND).body(ScooterStateResponse("error"))
@@ -79,7 +77,7 @@ class ScooterController(
     private fun getAvailableScooters(): ResponseEntity<List<Scooter>> {
         return try {
             circuitBreaker.executeSupplier {
-                val scooters = scooterRepository.findAll().filter { it.state == "ready" }
+                val scooters = scooterService.getAvailableScooters()
                 ResponseEntity.ok(scooters)
             }
         } catch (e: Exception) {
@@ -94,11 +92,8 @@ class ScooterController(
     ): ResponseEntity<String> {
         return try {
             circuitBreaker.executeSupplier {
-                val scooterOptional = scooterRepository.findById(scooterId)
-                if (scooterOptional.isPresent) {
-                    val existingScooter = scooterOptional.get()
-                    existingScooter.state = updatedScooter.state
-                    scooterRepository.save(existingScooter)
+                val scooter = scooterService.setScooterState(scooterId, updatedScooter)
+                if (scooter != null) {
                     ResponseEntity.ok("Scooter state updated successfully")
                 } else {
                     ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
@@ -114,22 +109,13 @@ class ScooterController(
     fun useScooter(@PathVariable scooterId: String): ResponseEntity<String> {
         return try {
             circuitBreaker.executeSupplier {
-                val scooterOptional = scooterRepository.findById(scooterId)
-                logger.info("Scooter with id $scooterId found")
-                if (scooterOptional.isPresent) {
-                    val scooter = scooterOptional.get()
-                    if (scooter.state == "ready") {
-                        scooter.state = "in use"
-                        scooterRepository.save(scooter)
-                        logger.info("Scooter with id $scooterId is now in use")
-                        ResponseEntity.ok("Scooter is now in use")
-                    } else {
-                        logger.warn("Scooter with id $scooterId is not available")
-                        ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scooter is not available")
-                    }
+                val scooter = scooterService.useScooter(scooterId)
+                if (scooter != null) {
+                    logger.info("Scooter with id $scooterId is now in use")
+                    ResponseEntity.ok("Scooter is now in use")
                 } else {
-                    logger.warn("Scooter with id $scooterId not found")
-                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scooter not found")
+                    logger.warn("Scooter with id $scooterId is not available or not found")
+                    ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scooter is not available or not found")
                 }
             }
         } catch (e: HttpClientErrorException) {

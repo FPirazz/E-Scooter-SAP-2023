@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient
+import users_service.models.User
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -54,7 +55,7 @@ class RegisterHandler(
     private fun handlePost(routingContext: RoutingContext) {
         val (name, email, password, isMaintainer) = getFormAttributes(routingContext) ?: return
 
-        val user = models.User(name, email, password, isMaintainer)
+        val user = User(name, email, password, isMaintainer)
 
         val userJson = JsonObject().put("name", user.name).put("email", user.email).put("password", user.password)
             .put("maintainer", user.isMaintainer)
