@@ -1,5 +1,6 @@
 package sap.pixelart.apigateway.infrastructure;
 
+import io.prometheus.metrics.core.metrics.Counter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
@@ -30,9 +31,12 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 	static Logger logger = Logger.getLogger("[PixelArt Service]");
 	static String PIXEL_GRID_CHANNEL = "pixel-grid-events";
 
-	public APIGatewayControllerVerticle(int port, PixelArtAsyncAPI serviceAPI) {
+	private Counter promCounter;
+
+	public APIGatewayControllerVerticle(int port, PixelArtAsyncAPI serviceAPI, Counter prometheusCounter) {
 		this.port = port;
 		this.serviceAPI = serviceAPI;
+		this.promCounter = prometheusCounter;
 		logger.setLevel(Level.INFO);
 	}
 
@@ -47,9 +51,14 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 		//router.route().handler(this::handleRouteRequest);
 		//2. If you want to check manually through localhost decomment this line of code.
 		router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
+		promCounter.labelValues("GET", "/health", "success").inc();
 
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
+		promCounter.labelValues("POST", "/api/brushes", "success").inc();
+
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
+		promCounter.labelValues("GET", "/api/brushes", "success").inc();
+
 		router.route(HttpMethod.GET, "/api/brushes/:brushId").handler(this::getBrushInfo);
 		router.route(HttpMethod.DELETE, "/api/brushes/:brushId").handler(this::destroyBrush);
 		router.route(HttpMethod.POST, "/api/brushes/:brushId/move-to").handler(this::moveBrushTo);

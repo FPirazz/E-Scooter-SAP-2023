@@ -10,10 +10,24 @@ global:
 # Here it's Prometheus itself.
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: 'test'
-
+  - job_name: 'PrometheusTest'
     # Override the global default and scrape targets from this job every 5 seconds.
     scrape_interval: 5s
-
     static_configs:
       - targets: ['localhost:9400']
+
+  - job_name: 'DistributedLogService'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'localhost:9003' ]
+
+  - job_name: 'APIGatewayService'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'localhost:9010' ]
+
+  - job_name: 'Dashboard'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'localhost:9001' ]
+
