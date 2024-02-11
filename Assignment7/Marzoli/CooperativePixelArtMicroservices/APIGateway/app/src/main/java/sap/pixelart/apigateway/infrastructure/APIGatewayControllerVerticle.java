@@ -51,14 +51,8 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 		//router.route().handler(this::handleRouteRequest);
 		//2. If you want to check manually through localhost decomment this line of code.
 		router.route(HttpMethod.GET, "/health").handler(this::healthCheck);
-		promCounter.labelValues("GET", "/health", "success").inc();
-
 		router.route(HttpMethod.POST, "/api/brushes").handler(this::createBrush);
-		promCounter.labelValues("POST", "/api/brushes", "success").inc();
-
 		router.route(HttpMethod.GET, "/api/brushes").handler(this::getCurrentBrushes);
-		promCounter.labelValues("GET", "/api/brushes", "success").inc();
-
 		router.route(HttpMethod.GET, "/api/brushes/:brushId").handler(this::getBrushInfo);
 		router.route(HttpMethod.DELETE, "/api/brushes/:brushId").handler(this::destroyBrush);
 		router.route(HttpMethod.POST, "/api/brushes/:brushId/move-to").handler(this::moveBrushTo);
@@ -76,6 +70,7 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 		logger.log(Level.INFO, "PixelArt Service ready - port: " + port);
 	}
 
+	/* Aux Method */
 	private void handleRouteRequest(RoutingContext context) {
 		if (healthCheck(context)) {
 			// Proceed with the actual route handling logic
@@ -88,6 +83,7 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 
 
 	protected boolean healthCheck(RoutingContext context) {
+
 		JsonObject healthStatus = new JsonObject();
 
 		//Checking for the API methods to work Properly.
@@ -134,6 +130,10 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 		logger.log(Level.INFO, "API HealthCheck request - " + context.currentRoute().getPath());
 		logger.log(Level.INFO, "Body: " + healthStatus.encodePrettily());
 
+		//Prometheus Counter.
+		if (isSystemHealthy) promCounter.labelValues("GET", "/health", "success").inc();
+			else promCounter.labelValues("GET", "/health", "error").inc();
+
 		// Health check is okay
 		return isSystemHealthy;
 	}
@@ -158,6 +158,8 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 	/* List of handlers, mapping the API */
 	
 	protected void createBrush(RoutingContext context) {
+		//Prometheus Counter.
+		promCounter.labelValues("POST", "/api/brushes", "success").inc();
 		logger.log(Level.INFO, "CreateBrush request - " + context.currentRoute().getPath());
 		JsonObject reply = new JsonObject();
 		serviceAPI
@@ -171,11 +173,13 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("POST", "/api/brushes", "error").inc();
 		});
 	}
 
 	protected void getCurrentBrushes(RoutingContext context) {
+		promCounter.labelValues("GET", "/api/brushes", "success").inc();
 		logger.log(Level.INFO, "GetCurrentBrushes request - " + context.currentRoute().getPath());
 
 		JsonObject reply = new JsonObject();
@@ -190,11 +194,13 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("GET", "/api/brushes", "error").inc();
 		});
 	}
 
 	protected void getBrushInfo(RoutingContext context) {
+		promCounter.labelValues("GET", "/api/brushes/:brushId", "success").inc();
 		logger.log(Level.INFO, "Get Brush info request: " + context.currentRoute().getPath());
 		String brushId = context.pathParam("brushId");
 		JsonObject reply = new JsonObject();
@@ -209,11 +215,14 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("GET", "/api/brushes/:brushId", "error").inc();
 		});
 	}
 
 	protected void moveBrushTo(RoutingContext context) {
+		promCounter.labelValues("POST", "/api/brushes/:brushId/move-to", "success").inc();
+
 		logger.log(Level.INFO, "MoveBrushTo request: " + context.currentRoute().getPath());
 		String brushId = context.pathParam("brushId");
 		logger.log(Level.INFO, "Brush id: " + brushId);
@@ -233,12 +242,15 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 				}
 			})
 			.onFailure((e) -> {
-				sendServiceError(context.response());			
+				sendServiceError(context.response());
+				promCounter.labelValues("POST", "/api/brushes/:brushId/move-to", "error").inc();
 			});
 		});
 	}
 
 	protected void changeBrushColor(RoutingContext context) {
+		promCounter.labelValues("POST", "/api/brushes/:brushId/change-color", "success").inc();
+
 		logger.log(Level.INFO, "ChangeBrushColor request: " + context.currentRoute().getPath());
 		String brushId = context.pathParam("brushId");
 		context.request().handler(buf -> {
@@ -256,12 +268,14 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 				}
 			})
 			.onFailure((e) -> {
-				sendServiceError(context.response());			
+				sendServiceError(context.response());
+				promCounter.labelValues("POST", "/api/brushes/:brushId/change-color", "error").inc();
 			});
 		});
 	}
 
 	protected void selectPixel(RoutingContext context) {
+		promCounter.labelValues("POST", "/api/brushes/:brushId/select-pixel", "success").inc();
 		logger.log(Level.INFO, "SelectPixel request: " + context.currentRoute().getPath());
 		String brushId = context.pathParam("brushId");
 		JsonObject reply = new JsonObject();
@@ -275,11 +289,13 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("POST", "/api/brushes/:brushId/select-pixel", "error").inc();
 		});
 	}
 
 	protected void destroyBrush(RoutingContext context) {
+		promCounter.labelValues("DELETE", "/api/brushes/:brushId", "success").inc();
 		logger.log(Level.INFO, "Destroy Brush request: " + context.currentRoute().getPath());
 		String brushId = context.pathParam("brushId");
 		JsonObject reply = new JsonObject();
@@ -293,11 +309,13 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("DELETE", "/api/brushes/:brushId", "error").inc();
 		});
 	}
 
 	protected void getPixelGridState(RoutingContext context) {
+		promCounter.labelValues("GET", "/api/pixel-grid", "success").inc();
 		logger.log(Level.INFO, "Get Pixel Grid state request: " + context.currentRoute().getPath());
 		JsonObject reply = new JsonObject();
 		serviceAPI
@@ -311,7 +329,8 @@ public class APIGatewayControllerVerticle extends AbstractVerticle implements Pi
 			}
 		})
 		.onFailure((e) -> {
-			sendServiceError(context.response());			
+			sendServiceError(context.response());
+			promCounter.labelValues("GET", "/api/pixel-grid", "error").inc();
 		});
 	}
 
