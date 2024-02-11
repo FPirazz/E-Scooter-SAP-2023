@@ -1,5 +1,6 @@
 package sap.pixelart.service.infrastructure;
 
+import io.prometheus.metrics.core.metrics.Gauge;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -13,6 +14,10 @@ import io.vertx.ext.web.RoutingContext;
 import sap.pixelart.service.application.PixelArtAPI;
 import sap.pixelart.service.domain.PixelGridEventObserver;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,8 +39,12 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 
 	private Vertx vertx;
 
+	private Gauge CPU;
+	private Gauge heapMemory;
+	private Gauge nonHeapMemory;
 
-	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI) {
+
+	public RestPixelArtServiceControllerVerticle(int port, PixelArtAPI appAPI, Gauge cpuPrometheus, Gauge heapMemoryPrometheus, Gauge nonHeapMemoryPrometheus) {
 		this.port = port;
 		this.pixelArtAPI = appAPI;
 		logger.setLevel(Level.INFO);
@@ -45,6 +54,10 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				.setDefaultHost("localhost")
 				.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
+
+		this.CPU = cpuPrometheus;
+		this.heapMemory =  heapMemoryPrometheus;
+		this.nonHeapMemory = nonHeapMemoryPrometheus;
 
 		sendLogRequest("[CooperativePixelArtService] - Init the RestPixelArtServiceControllerVerticle!");
 	}
@@ -177,7 +190,21 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated createBrush!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
+
+
 
 	protected void getCurrentBrushes(RoutingContext context) {
 		logger.log(Level.INFO, "GetCurrentBrushes request - " + context.currentRoute().getPath());
@@ -191,6 +218,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated getCurrentBrushes!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void getBrushInfo(RoutingContext context) {
@@ -205,6 +244,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated getBrushInfo!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void moveBrushTo(RoutingContext context) {
@@ -225,6 +276,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			}
 		});
 		sendLogRequest("[CooperativePixelArtService] - Terminated moveBrushTo!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void changeBrushColor(RoutingContext context) {
@@ -243,6 +306,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			}
 		});
 		sendLogRequest("[CooperativePixelArtService] - Terminated changeBrushColor!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void selectPixel(RoutingContext context) {
@@ -256,6 +331,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated selectPixel!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void destroyBrush(RoutingContext context) {
@@ -269,6 +356,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated destroyBrush!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	protected void getPixelGridState(RoutingContext context) {
@@ -282,6 +381,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			sendServiceError(context.response());
 		}
 		sendLogRequest("[CooperativePixelArtService] - Terminated getPixelGridState!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	/* Handling subscribers using web sockets */
@@ -308,6 +419,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 			}
 			sendLogRequest("[CooperativePixelArtService] - Terminated handleEventSubscription!");
 		});
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 	
 	/* This is notified by the application/domain layer */
@@ -323,6 +446,18 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 		obj.put("color", color);
 		eb.publish(PIXEL_GRID_CHANNEL, obj);
 		sendLogRequest("[CooperativePixelArtService] - Terminated pixelColorChanged!");
+
+		/* Prometheus */
+		// Update CPU usage metric
+		double cpuUsageValue = getProcessCpuLoad();
+		CPU.inc(cpuUsageValue);
+
+		// Update memory metrics
+		long heapMemoryUsedValue = getHeapMemoryUsage().getUsed();
+		long nonHeapMemoryUsedValue = getNonHeapMemoryUsage().getUsed();
+
+		heapMemory.inc(heapMemoryUsedValue);
+		nonHeapMemory.inc(nonHeapMemoryUsedValue);
 	}
 
 	/* Aux methods */
@@ -381,6 +516,26 @@ public class RestPixelArtServiceControllerVerticle extends AbstractVerticle impl
 				});
 
 		return p.future();
+	}
+
+
+	/* Aux Methods for Prometheus */
+	private static double getProcessCpuLoad() {
+		OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+		if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+			return ((com.sun.management.OperatingSystemMXBean) osBean).getProcessCpuLoad() * 100;
+		}
+		return -1.0; // Not supported on this platform
+	}
+
+	private static MemoryUsage getHeapMemoryUsage() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+		return memoryBean.getHeapMemoryUsage();
+	}
+
+	private static MemoryUsage getNonHeapMemoryUsage() {
+		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+		return memoryBean.getNonHeapMemoryUsage();
 	}
 
 }

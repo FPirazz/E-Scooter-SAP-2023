@@ -26,7 +26,10 @@ dependencies {
 
 	// Brave
 	//implementation("io.zipkin.brave:brave-instrumentation-okhttp3")
-
+    // Prometheus
+    implementation("io.prometheus:prometheus-metrics-core:1.0.0")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.0.0")
+    implementation("io.prometheus:prometheus-metrics-exporter-httpserver:1.0.0")
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:32.1.1-jre")
