@@ -4,6 +4,7 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient
+import users_service.models.User
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -46,7 +47,7 @@ class RegisterHandler(
         }
 
         // Create a User instance
-        val user = models.User(name, email, password, isMaintainer)
+        val user = User(name, email, password, isMaintainer)
 
         // Create a JsonObject to store the user's information
         val userJson = JsonObject()
