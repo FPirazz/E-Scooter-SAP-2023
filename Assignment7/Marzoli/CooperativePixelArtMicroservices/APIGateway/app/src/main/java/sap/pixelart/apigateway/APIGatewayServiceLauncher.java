@@ -17,7 +17,7 @@ import java.io.IOException;
 public class APIGatewayServiceLauncher {
 		
     public static void main(String[] args) throws InterruptedException, IOException {
-// Inizializza le metriche JVM
+        // Inizializza le metriche JVM
         JvmMetrics.builder().register();
 
         // Inizializza e registra un contatore personalizzato
