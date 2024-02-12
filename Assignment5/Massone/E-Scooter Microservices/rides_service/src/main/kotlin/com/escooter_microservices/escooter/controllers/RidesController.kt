@@ -5,18 +5,11 @@ import com.escooter_microservices.escooter.models.Ride
 import com.escooter_microservices.escooter.services.RideService
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.MediaType
+import org.springframework.http.*
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.util.LinkedMultiValueMap
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.ModelAndView
@@ -61,8 +54,14 @@ class RidesController(
      */
     @PostMapping("/remove_ride")
     fun removeRide(@RequestParam("id") id: String): ModelAndView {
-        rideService.removeRide(id)
-        return ModelAndView("ride_deleted")
+        return try {
+            circuitBreaker.executeSupplier {
+                rideService.removeRide(id)
+                ModelAndView("ride_deleted")
+            }
+        } catch (e: Exception) {
+            ModelAndView("error_page")
+        }
     }
 
     /**

@@ -2,7 +2,7 @@ package maintenance_service.controllers
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import maintenance_service.models.Scooter
-import maintenance_service.repositories.ScooterRepository
+import maintenance_service.services.ScooterService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
