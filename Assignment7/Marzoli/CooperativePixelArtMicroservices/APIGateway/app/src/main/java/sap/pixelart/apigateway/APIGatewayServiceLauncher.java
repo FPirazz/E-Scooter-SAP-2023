@@ -6,7 +6,6 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
-
 import java.io.IOException;
 
 /**
@@ -52,7 +51,7 @@ public class APIGatewayServiceLauncher {
 
             System.out.println("[API Gateway] HTTPServer listening on port http://localhost:" + server.getPort() + "/metrics");
 
-            service.launch();
+            service.launch(myCountTotal);
 
             // Attendi indefinitamente
             Thread.currentThread().join();
