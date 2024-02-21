@@ -1,14 +1,24 @@
 package users_service.handlers
 
+import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient
+import users_service.models.User
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
+/**
+ * This class is responsible for handling registration requests.
+ * It uses a Circuit Breaker to prevent the system from being overwhelmed by requests.
+ * It handles both GET and POST requests.
+ *
+ * @property dbClient The database client used to interact with the database.
+ * @property circuitBreaker The Circuit Breaker used to prevent the system from being overwhelmed by requests.
+ */
 class RegisterHandler(
-    private val dbClient: DatabaseClient,
+    private val dbClient: DatabaseClient, private val circuitBreaker: CircuitBreaker,
 ) : Handler {
     override fun handle(routingContext: RoutingContext) {
         // print the request
@@ -24,45 +34,63 @@ class RegisterHandler(
     }
 
     private fun handleGet(routingContext: RoutingContext) {
-        // Handle GET request here
-        val inputStream = javaClass.getResourceAsStream("/registration.html")
-        val reader = inputStream?.let { InputStreamReader(it) }?.let { BufferedReader(it) }
-        val fileContent = reader?.readText()
+        circuitBreaker.execute<Any> { promise ->
+            try {
+                val inputStream = javaClass.getResourceAsStream("/registration.html")
+                val reader = inputStream?.let { InputStreamReader(it) }?.let { BufferedReader(it) }
+                val fileContent = reader?.readText()
 
-        routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(fileContent)
+                routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(fileContent)
+                promise.complete()
+            } catch (e: Exception) {
+                promise.fail(e)
+            }
+        }.onComplete { ar ->
+            if (ar.failed()) {
+                println("Failed to handle GET request: ${ar.cause()}")
+            }
+        }
     }
 
     private fun handlePost(routingContext: RoutingContext) {
-        // Get the user's information from the request
+        val (name, email, password, isMaintainer) = getFormAttributes(routingContext) ?: return
+
+        val user = User(name, email, password, isMaintainer)
+
+        val userJson = JsonObject().put("name", user.name).put("email", user.email).put("password", user.password)
+            .put("maintainer", user.isMaintainer)
+
+        circuitBreaker.execute<Any> { promise ->
+            dbClient.save("users", userJson) { ar ->
+                if (ar.succeeded()) {
+                    promise.complete()
+                } else {
+                    promise.fail(ar.cause())
+                }
+            }
+        }.onComplete { ar ->
+            if (ar.succeeded()) {
+                routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
+            } else {
+                routingContext.fail(ar.cause())
+            }
+        }
+    }
+
+    private fun getFormAttributes(routingContext: RoutingContext): UserForm? {
         val name = routingContext.request().getFormAttribute("name")
         val email = routingContext.request().getFormAttribute("email")
         val password = routingContext.request().getFormAttribute("password")
         val isMaintainer = routingContext.request().getFormAttribute("maintainer") == "true"
 
-        // Check if any of the parameters are null
-        if (name == null || email == null || password == null) {
+        val isAnyFieldEmpty = name == null || email == null || password == null
+        if (isAnyFieldEmpty) {
             routingContext.response().setStatusCode(400).end("Missing request parameters")
-            return
+            return null
         }
 
-        // Create a User instance
-        val user = models.User(name, email, password, isMaintainer)
-
-        // Create a JsonObject to store the user's information
-        val userJson = JsonObject()
-            .put("name", user.name)
-            .put("email", user.email)
-            .put("password", user.password)
-            .put("maintainer", user.isMaintainer)
-
-        // Store the user's information in MongoDB
-        dbClient.save("users", userJson) { ar ->
-            if (ar.succeeded()) {
-                // redirect to the users root
-                routingContext.response().setStatusCode(302).putHeader("Location", "/users/").end()
-            } else {
-                println("Failed to store user in MongoDB: ${ar.cause()}")
-            }
-        }
+        return UserForm(name, email, password, isMaintainer)
     }
 }
+
+data class UserForm(val name: String, val email: String, val password: String, val isMaintainer: Boolean)

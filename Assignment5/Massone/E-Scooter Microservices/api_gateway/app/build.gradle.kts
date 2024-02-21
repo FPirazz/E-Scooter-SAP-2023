@@ -26,6 +26,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-autoconfigure:3.2.2")
+    // For the Circuit Breaker pattern.
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     implementation("com.google.guava:guava:31.1-jre")
     // Use the JUnit 5 integration.

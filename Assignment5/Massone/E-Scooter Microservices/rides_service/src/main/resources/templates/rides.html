@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Dashboard</title>
-    <script>
-        function goToUsers() {
-            window.location.href = "/users/";
-        }
-    </script>
+    <title>Rides</title>
 </head>
 <body>
-    <h2>Welcome to the Rides Service!</h2>
-    <button onclick="goToUsers()">Go to Users</button>
+<h2>Rides</h2>
+<button onclick="location.href='/'">Go back to Home</button>
+<ul>
+    <th:block th:each="ride : ${rides}">
+        <li>
+            <p>Start Location: <span th:text="${ride.startLocation}"></span></p>
+            <p>End Location: <span th:text="${ride.endLocation}"></span></p>
+            <p>Start Time: <span th:text="${ride.startTime}"></span></p>
+            <p>End Time: <span th:text="${ride.endTime}"></span></p>
+            <form action="/rides/remove_ride" method="post">
+                <input type="hidden" name="id" th:value="${ride.id}" />
+                <input type="submit" value="Remove Ride" />
+            </form>
+        </li>
+    </th:block>
+</ul>
 </body>
 </html>

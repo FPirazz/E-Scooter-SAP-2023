@@ -1,5 +1,6 @@
 package users_service.handlers
 
+import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.core.http.HttpHeaders
 import io.vertx.ext.web.RoutingContext
 import users_service.db.DatabaseClient

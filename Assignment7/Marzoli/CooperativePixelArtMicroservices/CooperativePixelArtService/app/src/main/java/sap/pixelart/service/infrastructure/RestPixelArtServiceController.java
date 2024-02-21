@@ -1,10 +1,12 @@
 package sap.pixelart.service.infrastructure;
 
+import io.prometheus.metrics.core.metrics.Gauge;
+import io.vertx.core.Vertx;
+import sap.pixelart.service.application.PixelArtAPI;
+import sap.pixelart.service.domain.PixelGridEventObserver;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import io.vertx.core.Vertx;
-import sap.pixelart.service.application.*;
-import sap.pixelart.service.domain.PixelGridEventObserver;
 
 /**
  * 
@@ -24,9 +26,9 @@ public class RestPixelArtServiceController implements PixelGridEventObserver {
 		this.port = port;
 	}
 		
-	public void init(PixelArtAPI pixelArtAPI) {
+	public void init(PixelArtAPI pixelArtAPI, Gauge cpuPrometheus, Gauge heapMemoryPrometheus, Gauge nonHeapMemoryPrometheus) {
     	Vertx vertx = Vertx.vertx();
-		this.service = new RestPixelArtServiceControllerVerticle(port, pixelArtAPI);
+		this.service = new RestPixelArtServiceControllerVerticle(port, pixelArtAPI, cpuPrometheus, heapMemoryPrometheus, nonHeapMemoryPrometheus);
 		vertx.deployVerticle(service);	
 		pixelArtAPI.subscribePixelGridEvents(this);
 	}

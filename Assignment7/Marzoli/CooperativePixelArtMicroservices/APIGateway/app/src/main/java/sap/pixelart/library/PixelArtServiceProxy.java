@@ -1,17 +1,14 @@
 package sap.pixelart.library;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.*;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import io.vertx.core.*;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.*;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.WebSocket;
-import io.vertx.core.http.WebSocketConnectOptions;
 
 class PixelArtServiceProxy implements PixelArtAsyncAPI {
 
@@ -33,6 +30,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					.setDefaultHost(host)
 					.setDefaultPort(port);
 		client = vertx.createHttpClient(options);
+		sendLogRequest("[API Gateway] - Init of the PixelArtServiceProxy.");
 	}
 
 	public Future<String> createBrush() {	
@@ -53,6 +51,8 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		//Effettuo un log di prova.
+		sendLogRequest("[API Gateway] - Terminated CreateBrush!");
 		return p.future();
 	}
 
@@ -75,6 +75,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getCurrentBrushes!");
 		return p.future();
 	}
 
@@ -97,6 +98,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getBrushInfo!");
 		return p.future();
 	}
 
@@ -119,6 +121,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated getPixelGridState!");
 		return p.future();
 	}
 
@@ -145,6 +148,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated moveBrushTo!");
 		return p.future();
 	}
 
@@ -164,6 +168,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated SelectPixel!");
 		return p.future();
 	}
 
@@ -189,6 +194,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated changeBrushColor!");
 		return p.future();
 	}
 
@@ -210,6 +216,7 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 		.onFailure(f -> {
 			p.fail(f.getMessage());
 		});
+		sendLogRequest("[API Gateway] - Terminated destroyBrush!");
 		return p.future();
 	}
 
@@ -250,7 +257,40 @@ class PixelArtServiceProxy implements PixelArtAsyncAPI {
 					p.fail(res.cause());
 				}
 		});
-		
+		sendLogRequest("[API Gateway] - Terminated subscribePixelGridEvent!");
 		return p.future();
 	}
+
+	//Part of the Pattern for the Distributed Log.
+	private Future<Void> sendLogRequest(String messageLog) {
+		Promise<Void> p = Promise.promise();
+
+		JsonObject logData = new JsonObject().put("message", messageLog);
+		client
+				.request(HttpMethod.POST, 9003, "localhost", "/api/log")
+				.onSuccess(request -> {
+					// Imposta l'header content-type
+					request.putHeader("content-type", "application/json");
+
+					// Converti l'oggetto JSON in una stringa e invialo come corpo della richiesta
+					String payload = logData.encodePrettily();
+					request.putHeader("content-length", "" + payload.length());
+
+					request.write(payload);
+
+					request.response().onSuccess(resp -> {
+						p.complete();
+					});
+
+					System.out.println("[Log] Received response with status code " + request.getURI());
+					// Invia la richiesta
+					request.end();
+				})
+				.onFailure(f -> {
+					p.fail(f.getMessage());
+				});
+
+		return p.future();
+	}
+
 }
