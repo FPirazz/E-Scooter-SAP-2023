@@ -3,33 +3,49 @@ package sap.escooters.infrastructure.db;
 import io.vertx.core.json.JsonObject;
 import sap.escooters.domain.entities.User;
 import sap.escooters.ports.output.UserRepository;
+import sap.escooters.ports.output.UserSerializer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 
 public class UserRepositoryImpl implements UserRepository {
     private static final String USERS_PATH = "users";
     private String dbaseFolder;
+    private UserSerializer userSerializer;
 
-    public UserRepositoryImpl(String dbaseFolder) {
+    public UserRepositoryImpl(String dbaseFolder, UserSerializer userSerializer) {
         this.dbaseFolder = dbaseFolder;
+        this.userSerializer = userSerializer;
         makeDir(dbaseFolder);
         makeDir(dbaseFolder + File.separator + USERS_PATH);
     }
 
     @Override
     public void save(User user) {
-        JsonObject userJson = user.toJson();
+        JsonObject userJson = userSerializer.toJson(user);
         saveObj(USERS_PATH, userJson.getString("id"), userJson);
     }
 
     @Override
     public Optional<User> findById(String id) {
-        // Implement the logic to find a user by id.
-        // This method is not implemented in the DataSourceLayerImpl class.
-        return Optional.empty();
+        try {
+            String path = dbaseFolder + File.separator + USERS_PATH + File.separator + id + ".json";
+            if (!Files.exists(Paths.get(path))) {
+                return Optional.empty();
+            }
+            String content = new String(Files.readAllBytes(Paths.get(path)));
+            JsonObject userJson = new JsonObject(content);
+            User user = userSerializer.fromJson(userJson);
+            return Optional.of(user);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     private void saveObj(String db, String id, JsonObject obj) {

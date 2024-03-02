@@ -3,33 +3,49 @@ package sap.escooters.infrastructure.db;
 import io.vertx.core.json.JsonObject;
 import sap.escooters.domain.entities.EScooter;
 import sap.escooters.ports.output.EScooterRepository;
+import sap.escooters.ports.output.EScooterSerializer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class EScooterRepositoryImpl implements EScooterRepository {
     private static final String ESCOOTERS_PATH = "escooters";
     private String dbaseFolder = "resources";
+    private EScooterSerializer escooterSerializer;
 
-    public EScooterRepositoryImpl(String dbaseFolder) {
+    public EScooterRepositoryImpl(String dbaseFolder, EScooterSerializer escooterSerializer) {
         this.dbaseFolder = dbaseFolder;
+        this.escooterSerializer = escooterSerializer;
         makeDir(dbaseFolder);
         makeDir(dbaseFolder + File.separator + ESCOOTERS_PATH);
     }
 
     @Override
     public void save(EScooter escooter) {
-        JsonObject escooterJson = escooter.toJson();
+        JsonObject escooterJson = escooterSerializer.toJson(escooter);
         saveObj(ESCOOTERS_PATH, escooterJson.getString("id"), escooterJson);
     }
 
+
     @Override
     public Optional<EScooter> findById(String id) {
-        // Implement the logic to find an escooter by id.
-        // This method is not implemented in the DataSourceLayerImpl class.
-        return Optional.empty();
+        try {
+            String path = dbaseFolder + File.separator + ESCOOTERS_PATH + File.separator + id + ".json";
+            if (!Files.exists(Paths.get(path))) {
+                return Optional.empty();
+            }
+            String content = new String(Files.readAllBytes(Paths.get(path)));
+            JsonObject escooterJson = new JsonObject(content);
+            EScooter escooter = escooterSerializer.fromJson(escooterJson);
+            return Optional.of(escooter);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     private void saveObj(String db, String id, JsonObject obj) {

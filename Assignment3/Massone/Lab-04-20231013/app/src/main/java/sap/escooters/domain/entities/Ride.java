@@ -2,6 +2,7 @@ package sap.escooters.domain.entities;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Ride {
 
@@ -12,8 +13,8 @@ public class Ride {
 	private boolean ongoing;
 	private String id;
 	
-	public Ride(String id, User user, EScooter scooter) {
-		this.id = id;
+	public Ride(User user, EScooter scooter) {
+		this.id = UUID.randomUUID().toString();
 		this.startedDate = new Date();
 		this.endDate = Optional.empty();
 		this.user = user;

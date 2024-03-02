@@ -3,6 +3,7 @@ package sap.escooters.domain.services;
 import io.vertx.core.json.JsonObject;
 import sap.escooters.domain.entities.EScooter;
 import sap.escooters.domain.entities.Location;
+import sap.escooters.domain.entities.EScooter.EScooterState;
 import sap.escooters.ports.input.EScooterUseCases;
 import sap.escooters.ports.output.EScooterRepository;
 import sap.escooters.ports.output.EScooterSerializer;
@@ -20,25 +21,15 @@ public class EScooterService implements EScooterUseCases {
 
     @Override
     public void registerNewEScooter(String id) {
-        EScooter escooter = new EScooter(id, escooterRepository);
-        escooter.save();
+        EScooter escooter = new EScooter(id);
+        escooterRepository.save(escooter);
     }
 
-    @Override
-    public JsonObject getEScooterInfo(String id) {
+    public void updateEScooterState(String id, EScooterState state) {
         Optional<EScooter> escooter = escooterRepository.findById(id);
         if (escooter.isPresent()) {
-            return escooterSerializer.toJson(escooter.get());
-        } else {
-            throw new RuntimeException("EScooter not found");
-        }
-    }
-
-    public void updateEScooterState(String id, EScooter.EScooterState state) {
-        Optional<EScooter> escooter = escooterRepository.findById(id);
-        if (escooter.isPresent()) {
-            escooter.get().updateState(state);
-            escooter.get().save();
+            escooter.get().setState(state);
+            escooterRepository.save(escooter.get());
         } else {
             throw new RuntimeException("EScooter not found");
         }
@@ -47,8 +38,22 @@ public class EScooterService implements EScooterUseCases {
     public void updateEScooterLocation(String id, Location newLoc) {
         Optional<EScooter> escooter = escooterRepository.findById(id);
         if (escooter.isPresent()) {
-            escooter.get().updateLocation(newLoc);
-            escooter.get().save();
+            escooter.get().setLocation(newLoc);
+            escooterRepository.save(escooter.get());
+        } else {
+            throw new RuntimeException("EScooter not found");
+        }
+    }
+
+    public boolean escooterExists(String escooterId) {
+        return escooterRepository.findById(escooterId).isPresent();
+    }
+
+    @Override
+    public JsonObject getEScooterInfo(String id) {
+        Optional<EScooter> escooter = escooterRepository.findById(id);
+        if (escooter.isPresent()) {
+            return escooterSerializer.toJson(escooter.get());
         } else {
             throw new RuntimeException("EScooter not found");
         }

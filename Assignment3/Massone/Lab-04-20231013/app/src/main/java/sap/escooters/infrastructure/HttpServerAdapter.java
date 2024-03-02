@@ -12,12 +12,12 @@ import io.vertx.ext.web.handler.StaticHandler;
 import sap.escooters.domain.services.EScooterService;
 import sap.escooters.domain.services.RideService;
 import sap.escooters.domain.services.UserService;
-import sap.escooters.ports.input.HttpPort;
+import sap.escooters.ports.input.ServerPort;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HttpAdapter extends AbstractVerticle implements HttpPort {
+public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
 
     static Logger logger = Logger.getLogger("[EScooter Server]");
     private int port;
@@ -25,14 +25,13 @@ public class HttpAdapter extends AbstractVerticle implements HttpPort {
     private EScooterService escooterService;
     private RideService rideService;
 
-    public HttpAdapter(int port, UserService userService, EScooterService escooterService, RideService rideService) {
+    public HttpServerAdapter(int port, UserService userService, EScooterService escooterService, RideService rideService) {
         this.port = port;
         this.userService = userService;
         this.escooterService = escooterService;
         this.rideService = rideService;
         logger.setLevel(Level.INFO);
     }
-
 
     public void start() {
         logger.log(Level.INFO, "EScooterMan server initializing...");
@@ -64,13 +63,11 @@ public class HttpAdapter extends AbstractVerticle implements HttpPort {
         HttpServerResponse response = routingContext.response();
         response.putHeader("content-type", "text/html");
 
-        logger.info("Path:" + System.getProperties().getProperty("user.dir"));
-
-        // Read the ride-dashboard.html file and send its content as the response
-        vertx.fileSystem().readFile("Massone/Lab-04-20231013/app/webroot/ride-dashboard.html", result -> {
+        vertx.fileSystem().readFile("resources/webroot/ride-dashboard.html", result -> {
             if (result.succeeded()) {
                 response.end(result.result());
             } else {
+                logger.log(Level.SEVERE, "Failed to read file", result.cause());
                 response.setStatusCode(500).end();
             }
         });
@@ -111,10 +108,13 @@ public class HttpAdapter extends AbstractVerticle implements HttpPort {
 
         JsonObject reply = new JsonObject();
         try {
+            logger.info("Attempting to register new e-scooter with id: " + id);
             escooterService.registerNewEScooter(id);
             reply.put("result", "ok");
+            logger.info("E-scooter registered successfully with id: " + id);
         } catch (Exception ex) {
             reply.put("result", "escooter-id-already-existing");
+            logger.severe("Failed to register new e-scooter with id: " + id + ". Error: " + ex.getMessage());
         }
         sendReply(context, reply);
     }
@@ -139,11 +139,28 @@ public class HttpAdapter extends AbstractVerticle implements HttpPort {
 
         JsonObject reply = new JsonObject();
         try {
+            if (!userService.userExists(userId)) {
+                reply.put("result", "user-does-not-exist");
+                logger.severe("Failed to start new ride because user does not exist: " + userId);
+                sendReply(context, reply);
+                return;
+            }
+
+            if (!escooterService.escooterExists(escooterId)) {
+                reply.put("result", "escooter-does-not-exist");
+                logger.severe("Failed to start new ride because e-scooter does not exist: " + escooterId);
+                sendReply(context, reply);
+                return;
+            }
+
             String rideId = rideService.startNewRide(userId, escooterId);
             reply.put("result", "ok");
             reply.put("rideId", rideId);
+            logger.info("Ride started successfully with rideId: " + rideId);
         } catch (Exception ex) {
             reply.put("result", "start-new-ride-failed");
+            logger.severe("Failed to start new ride for user: " + userId + " with e-scooter: " + escooterId + ". Error: "
+                    + ex.getMessage());
         }
         sendReply(context, reply);
     }

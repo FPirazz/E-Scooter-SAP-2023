@@ -5,11 +5,7 @@ import sap.escooters.domain.services.EScooterService;
 import sap.escooters.domain.services.RideService;
 import sap.escooters.domain.services.UserService;
 import sap.escooters.ports.output.PresentationPort;
-import sap.escooters.presentation_layer.EScooterManServer;
-import sap.layers.Layer;
-
-import java.util.Optional;
-
+import sap.escooters.infrastructure.HttpServerAdapter;
 public class PresentationAdapter implements PresentationPort {
     private UserService userService;
     private EScooterService escooterService;
@@ -24,9 +20,9 @@ public class PresentationAdapter implements PresentationPort {
     }
 
     @Override
-    public void init(Optional<Layer> layer) {
+    public void init() {
         Vertx vertx = Vertx.vertx();
-        EScooterManServer myVerticle = new EScooterManServer(port, userService, escooterService, rideService);
+        HttpServerAdapter myVerticle = new HttpServerAdapter(port, userService, escooterService, rideService);
         vertx.deployVerticle(myVerticle);
     }
 }

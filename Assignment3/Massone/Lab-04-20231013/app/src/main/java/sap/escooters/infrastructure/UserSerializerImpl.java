@@ -13,4 +13,11 @@ public class UserSerializerImpl implements UserSerializer {
         userObj.put("surname", user.getSurname());
         return userObj;
     }
+
+    @Override
+    public User fromJson(JsonObject userJson) {
+        String name = userJson.getString("name");
+        String surname = userJson.getString("surname");
+        return new User(name, surname);
+    }
 }

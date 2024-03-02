@@ -20,6 +20,9 @@ dependencies {
     // Use JUnit test framework.
     testImplementation 'junit:junit:4.13.2'
 
+    implementation 'io.vertx:vertx-core:4.5.4'
+    implementation 'io.vertx:vertx-web:4.5.4'
+
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
 }
@@ -33,5 +36,5 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'lab.App'
+    mainClass = 'sap.escooters.launcher.EScooterManagementSystem'
 }

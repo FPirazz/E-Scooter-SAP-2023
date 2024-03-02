@@ -1,36 +1,44 @@
 package sap.escooters.domain.services;
 
 import io.vertx.core.json.JsonObject;
-import sap.escooters.application.ports.input.UserUseCases;
+import sap.escooters.ports.input.UserUseCases;
 import sap.escooters.domain.entities.User;
-import sap.escooters.domain_layer.DomainLayer;
+import sap.escooters.ports.output.UserRepository;
+import sap.escooters.ports.output.UserSerializer;
 
 import java.util.Optional;
 
 public class UserService implements UserUseCases {
-    private DomainLayer domainLayer;
+    private UserRepository userRepository;
+    private UserSerializer userSerializer;
 
-    public UserService(DomainLayer domainLayer) {
-        this.domainLayer = domainLayer;
+    public UserService(UserRepository userRepository, UserSerializer userSerializer) {
+        this.userRepository = userRepository;
+        this.userSerializer = userSerializer;
     }
 
     @Override
-    public void registerNewUser(String id, String name, String surname) throws UserIdAlreadyExistingException {
-        Optional<User> user = domainLayer.getUser(id);
+    public void registerNewUser(String id, String name, String surname) throws Exception {
+        Optional<User> user = userRepository.findById(id);
         if (user.isEmpty()) {
-            domainLayer.addNewUser(id, name, surname);
+            User newUser = new User(name, surname);
+            userRepository.save(newUser); // Save the user using the userRepository
         } else {
-            throw new UserIdAlreadyExistingException();
+            throw new Exception("User already exists");
         }
     }
 
     @Override
-    public JsonObject getUserInfo(String id) throws UserNotFoundException {
-        Optional<User> user = domainLayer.getUser(id);
+    public JsonObject getUserInfo(String id) throws Exception {
+        Optional<User> user = userRepository.findById(id);
         if (user.isPresent()) {
-            return user.get().toJson();
+            return userSerializer.toJson(user.get());
         } else {
-            throw new UserNotFoundException();
+            throw new Exception("User not found");
         }
+    }
+
+    public boolean userExists(String userId) {
+        return userRepository.findById(userId).isPresent();
     }
 }
