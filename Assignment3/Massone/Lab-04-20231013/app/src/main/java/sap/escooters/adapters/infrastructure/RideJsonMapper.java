@@ -8,7 +8,6 @@ import sap.escooters.domain.entities.Ride;
 import sap.escooters.domain.entities.User;
 import sap.escooters.domain.repositories.EScooterRepository;
 import sap.escooters.domain.repositories.UserRepository;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

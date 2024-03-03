@@ -47,6 +47,8 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         router.route(HttpMethod.POST, "/api/escooters").handler(this::registerNewEScooter);
         router.route(HttpMethod.GET, "/api/escooters/:escooterId").handler(this::getEScooterInfo);
         router.route(HttpMethod.POST, "/api/rides").handler(this::startNewRide);
+        router.route(HttpMethod.GET, "/api/rides/ongoing_dashboard").handler(this::getOngoingRides);
+        router.route(HttpMethod.GET, "/api/rides/ongoing").handler(this::getOngoingRidesCount);
         router.route(HttpMethod.GET, "/api/rides/:rideId").handler(this::getRideInfo);
         router.route(HttpMethod.POST, "/api/rides/:rideId/end").handler(this::endRide);
 
@@ -60,6 +62,34 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
     public void stop() {
         LOGGER.log(Level.INFO, "EScooterMan server stopped");
         vertx.close();
+    }
+
+    private void getOngoingRidesCount(RoutingContext routingContext) {
+        LOGGER.log(Level.INFO, "New ongoing rides count request: " + routingContext.currentRoute().getPath());
+        HttpServerResponse response = routingContext.response();
+        response.putHeader("content-type", "application/json");
+    
+        int ongoingRidesCount = rideService.getNumberOfOngoingRides();
+        JsonObject reply = new JsonObject();
+        reply.put("result", "ok");
+        reply.put("numberOfOngoingRides", ongoingRidesCount);
+    
+        response.end(reply.toString());
+    }
+
+    private void getOngoingRides(RoutingContext routingContext) {
+        LOGGER.log(Level.INFO, "New ongoing rides request: " + routingContext.currentRoute().getPath());
+        HttpServerResponse response = routingContext.response();
+        response.putHeader("content-type", "text/html");
+    
+        vertx.fileSystem().readFile("resources/webroot/ongoing_rides.html", result -> {
+            if (result.succeeded()) {
+                response.end(result.result());
+            } else {
+                LOGGER.log(Level.SEVERE, "Failed to read file", result.cause());
+                response.setStatusCode(500).end();
+            }
+        });
     }
 
     private void getDashboard(RoutingContext routingContext) {
