@@ -1,14 +1,15 @@
-package sap.escooters.infrastructure.db;
+package sap.escooters.adapters.infrastructure.db;
 
 import io.vertx.core.json.JsonObject;
+import sap.escooters.adapters.mappers.EScooterSerializer;
 import sap.escooters.domain.entities.EScooter;
-import sap.escooters.ports.output.EScooterRepository;
-import sap.escooters.ports.output.EScooterSerializer;
+import sap.escooters.domain.repositories.EScooterRepository;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Optional;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -26,7 +27,11 @@ public class EScooterRepositoryImpl implements EScooterRepository {
 
     @Override
     public void save(EScooter escooter) {
-        JsonObject escooterJson = escooterSerializer.toJson(escooter);
+        JsonObject escooterJson = new JsonObject(escooterSerializer.serialize(escooter));
+        // Print the json that is going to be saved
+        System.out.println("EscoterRepositoryImpl: ");
+        System.out.println("Saving the following json: ");
+        System.out.println(escooterJson);
         saveObj(ESCOOTERS_PATH, escooterJson.getString("id"), escooterJson);
     }
 
@@ -40,7 +45,7 @@ public class EScooterRepositoryImpl implements EScooterRepository {
             }
             String content = new String(Files.readAllBytes(Paths.get(path)));
             JsonObject escooterJson = new JsonObject(content);
-            EScooter escooter = escooterSerializer.fromJson(escooterJson);
+            EScooter escooter = escooterSerializer.deserialize(escooterJson.encode());
             return Optional.of(escooter);
         } catch (Exception ex) {
             ex.printStackTrace();

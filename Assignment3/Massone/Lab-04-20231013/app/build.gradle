@@ -9,6 +9,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'java'
 }
 
 repositories {
@@ -17,14 +18,19 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13.2'
-
     implementation 'io.vertx:vertx-core:4.5.4'
     implementation 'io.vertx:vertx-web:4.5.4'
 
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
+
+    // Use JUnit test framework.
+    implementation 'junit:junit:4.13.2'
+    implementation 'org.mockito:mockito-core:5.11.0'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -37,4 +43,11 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'sap.escooters.launcher.EScooterManagementSystem'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

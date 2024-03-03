@@ -1,4 +1,4 @@
-package sap.escooters.ports.output;
+package sap.escooters.domain.repositories;
 
 import java.util.Optional;
 

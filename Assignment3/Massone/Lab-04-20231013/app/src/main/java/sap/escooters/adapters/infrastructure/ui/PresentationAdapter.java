@@ -1,11 +1,11 @@
-package sap.escooters.infrastructure.ui;
+package sap.escooters.adapters.infrastructure.ui;
 
 import io.vertx.core.Vertx;
+import sap.escooters.adapters.infrastructure.HttpServerAdapter;
 import sap.escooters.domain.services.EScooterService;
 import sap.escooters.domain.services.RideService;
 import sap.escooters.domain.services.UserService;
 import sap.escooters.ports.output.PresentationPort;
-import sap.escooters.infrastructure.HttpServerAdapter;
 public class PresentationAdapter implements PresentationPort {
     private UserService userService;
     private EScooterService escooterService;

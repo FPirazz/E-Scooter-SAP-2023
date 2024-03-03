@@ -1,14 +1,15 @@
-package sap.escooters.infrastructure.db;
+package sap.escooters.adapters.infrastructure.db;
 
 import io.vertx.core.json.JsonObject;
+import sap.escooters.adapters.mappers.UserSerializer;
 import sap.escooters.domain.entities.User;
-import sap.escooters.ports.output.UserRepository;
-import sap.escooters.ports.output.UserSerializer;
+import sap.escooters.domain.repositories.UserRepository;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Optional;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -27,7 +28,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void save(User user) {
-        JsonObject userJson = userSerializer.toJson(user);
+        JsonObject userJson = new JsonObject(userSerializer.serialize(user));
         saveObj(USERS_PATH, userJson.getString("id"), userJson);
     }
 
@@ -40,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
             String content = new String(Files.readAllBytes(Paths.get(path)));
             JsonObject userJson = new JsonObject(content);
-            User user = userSerializer.fromJson(userJson);
+            User user = userSerializer.deserialize(userJson.encode());
             return Optional.of(user);
         } catch (Exception ex) {
             ex.printStackTrace();

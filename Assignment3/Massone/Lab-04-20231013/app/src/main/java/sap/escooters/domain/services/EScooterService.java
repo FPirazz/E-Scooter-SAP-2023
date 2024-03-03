@@ -1,12 +1,11 @@
 package sap.escooters.domain.services;
 
-import io.vertx.core.json.JsonObject;
+import sap.escooters.adapters.mappers.EScooterSerializer;
 import sap.escooters.domain.entities.EScooter;
 import sap.escooters.domain.entities.Location;
 import sap.escooters.domain.entities.EScooter.EScooterState;
+import sap.escooters.domain.repositories.EScooterRepository;
 import sap.escooters.ports.input.EScooterUseCases;
-import sap.escooters.ports.output.EScooterRepository;
-import sap.escooters.ports.output.EScooterSerializer;
 
 import java.util.Optional;
 
@@ -50,10 +49,10 @@ public class EScooterService implements EScooterUseCases {
     }
 
     @Override
-    public JsonObject getEScooterInfo(String id) {
+    public String getEScooterInfo(String id) {
         Optional<EScooter> escooter = escooterRepository.findById(id);
         if (escooter.isPresent()) {
-            return escooterSerializer.toJson(escooter.get());
+            return escooterSerializer.serialize(escooter.get());
         } else {
             throw new RuntimeException("EScooter not found");
         }

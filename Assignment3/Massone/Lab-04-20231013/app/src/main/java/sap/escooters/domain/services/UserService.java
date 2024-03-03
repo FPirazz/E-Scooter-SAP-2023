@@ -2,9 +2,9 @@ package sap.escooters.domain.services;
 
 import io.vertx.core.json.JsonObject;
 import sap.escooters.ports.input.UserUseCases;
+import sap.escooters.adapters.mappers.UserSerializer;
 import sap.escooters.domain.entities.User;
-import sap.escooters.ports.output.UserRepository;
-import sap.escooters.ports.output.UserSerializer;
+import sap.escooters.domain.repositories.UserRepository;
 
 import java.util.Optional;
 
@@ -29,10 +29,10 @@ public class UserService implements UserUseCases {
     }
 
     @Override
-    public JsonObject getUserInfo(String id) throws Exception {
+    public String getUserInfo(String id) throws Exception {
         Optional<User> user = userRepository.findById(id);
         if (user.isPresent()) {
-            return userSerializer.toJson(user.get());
+            return userSerializer.serialize(user.get());
         } else {
             throw new Exception("User not found");
         }

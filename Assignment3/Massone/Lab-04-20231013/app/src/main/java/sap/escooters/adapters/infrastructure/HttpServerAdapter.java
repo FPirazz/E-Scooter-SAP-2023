@@ -1,4 +1,4 @@
-package sap.escooters.infrastructure;
+package sap.escooters.adapters.infrastructure;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
@@ -18,8 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
-
-    static Logger logger = Logger.getLogger("[EScooter Server]");
+    static Logger LOGGER = Logger.getLogger("[EScooter Server]");
     private int port;
     private UserService userService;
     private EScooterService escooterService;
@@ -30,11 +29,11 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         this.userService = userService;
         this.escooterService = escooterService;
         this.rideService = rideService;
-        logger.setLevel(Level.INFO);
+        LOGGER.setLevel(Level.INFO);
     }
 
     public void start() {
-        logger.log(Level.INFO, "EScooterMan server initializing...");
+        LOGGER.log(Level.INFO, "EScooterMan server initializing...");
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
@@ -55,11 +54,16 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
                 .requestHandler(router)
                 .listen(port);
 
-        logger.log(Level.INFO, "EScooterMan server ready - port: " + port);
+        LOGGER.log(Level.INFO, "EScooterMan server ready - port: " + port);
+    }
+
+    public void stop() {
+        LOGGER.log(Level.INFO, "EScooterMan server stopped");
+        vertx.close();
     }
 
     private void getDashboard(RoutingContext routingContext) {
-        logger.log(Level.INFO, "New dashboard request: " + routingContext.currentRoute().getPath());
+        LOGGER.log(Level.INFO, "New dashboard request: " + routingContext.currentRoute().getPath());
         HttpServerResponse response = routingContext.response();
         response.putHeader("content-type", "text/html");
 
@@ -67,7 +71,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
             if (result.succeeded()) {
                 response.end(result.result());
             } else {
-                logger.log(Level.SEVERE, "Failed to read file", result.cause());
+                LOGGER.log(Level.SEVERE, "Failed to read file", result.cause());
                 response.setStatusCode(500).end();
             }
         });
@@ -93,7 +97,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         String userId = context.pathParam("userId");
         JsonObject reply = new JsonObject();
         try {
-            JsonObject info = userService.getUserInfo(userId);
+            String info = userService.getUserInfo(userId);
             reply.put("result", "ok");
             reply.put("user", info);
         } catch (Exception ex) {
@@ -108,13 +112,13 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
 
         JsonObject reply = new JsonObject();
         try {
-            logger.info("Attempting to register new e-scooter with id: " + id);
+            LOGGER.info("Attempting to register new e-scooter with id: " + id);
             escooterService.registerNewEScooter(id);
             reply.put("result", "ok");
-            logger.info("E-scooter registered successfully with id: " + id);
+            LOGGER.info("E-scooter registered successfully with id: " + id);
         } catch (Exception ex) {
             reply.put("result", "escooter-id-already-existing");
-            logger.severe("Failed to register new e-scooter with id: " + id + ". Error: " + ex.getMessage());
+            LOGGER.severe("Failed to register new e-scooter with id: " + id + ". Error: " + ex.getMessage());
         }
         sendReply(context, reply);
     }
@@ -123,7 +127,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         String escooterId = context.pathParam("escooterId");
         JsonObject reply = new JsonObject();
         try {
-            JsonObject info = escooterService.getEScooterInfo(escooterId);
+            String info = escooterService.getEScooterInfo(escooterId);
             reply.put("result", "ok");
             reply.put("escooter", info);
         } catch (Exception ex) {
@@ -141,14 +145,14 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         try {
             if (!userService.userExists(userId)) {
                 reply.put("result", "user-does-not-exist");
-                logger.severe("Failed to start new ride because user does not exist: " + userId);
+                LOGGER.severe("Failed to start new ride because user does not exist: " + userId);
                 sendReply(context, reply);
                 return;
             }
 
             if (!escooterService.escooterExists(escooterId)) {
                 reply.put("result", "escooter-does-not-exist");
-                logger.severe("Failed to start new ride because e-scooter does not exist: " + escooterId);
+                LOGGER.severe("Failed to start new ride because e-scooter does not exist: " + escooterId);
                 sendReply(context, reply);
                 return;
             }
@@ -156,10 +160,10 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
             String rideId = rideService.startNewRide(userId, escooterId);
             reply.put("result", "ok");
             reply.put("rideId", rideId);
-            logger.info("Ride started successfully with rideId: " + rideId);
+            LOGGER.info("Ride started successfully with rideId: " + rideId);
         } catch (Exception ex) {
             reply.put("result", "start-new-ride-failed");
-            logger.severe("Failed to start new ride for user: " + userId + " with e-scooter: " + escooterId + ". Error: "
+            LOGGER.severe("Failed to start new ride for user: " + userId + " with e-scooter: " + escooterId + ". Error: "
                     + ex.getMessage());
         }
         sendReply(context, reply);
@@ -169,7 +173,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         String rideId = context.pathParam("rideId");
         JsonObject reply = new JsonObject();
         try {
-            JsonObject info = rideService.getRideInfo(rideId);
+            String info = rideService.getRideInfo(rideId);
             reply.put("result", "ok");
             reply.put("ride", info);
         } catch (Exception ex) {
@@ -180,12 +184,15 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
 
     protected void endRide(RoutingContext context) {
         String rideId = context.pathParam("rideId");
+        LOGGER.info("Received request to end ride with ID: " + rideId);
         JsonObject reply = new JsonObject();
         try {
             rideService.endRide(rideId);
             reply.put("result", "ok");
+            LOGGER.info("Successfully ended ride with ID: " + rideId);
         } catch (Exception ex) {
             reply.put("result", "ride-already-ended");
+            LOGGER.warning("Attempted to end ride with ID: " + rideId + ", but it was already ended");
         }
         sendReply(context, reply);
     }
