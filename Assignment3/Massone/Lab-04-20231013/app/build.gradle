@@ -25,7 +25,8 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
-
+    implementation 'org.mongodb:mongo-java-driver:3.12.14'
+    implementation 'org.mongodb:mongodb-driver-sync:5.0.0'
     // Use JUnit test framework.
     implementation 'junit:junit:4.13.2'
     implementation 'org.mockito:mockito-core:5.11.0'

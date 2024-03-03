@@ -4,6 +4,7 @@ import sap.escooters.adapters.infrastructure.EScooterSerializerImpl;
 import sap.escooters.adapters.infrastructure.RideJsonMapper;
 import sap.escooters.adapters.infrastructure.UserSerializerImpl;
 import sap.escooters.adapters.infrastructure.db.EScooterRepositoryImpl;
+import sap.escooters.adapters.infrastructure.db.MongoRideRepository;
 import sap.escooters.adapters.infrastructure.db.RideRepositoryImpl;
 import sap.escooters.adapters.infrastructure.db.UserRepositoryImpl;
 import sap.escooters.adapters.infrastructure.ui.PresentationAdapter;
@@ -30,12 +31,15 @@ public class EScooterManagementSystem {
 
         // Set up database folder
 
-        RideRepositoryImpl rideRepository = new RideRepositoryImpl(dbaseFolder, rideSerializer);
+        RideJsonMapper rideJsonMapper = new RideJsonMapper(userRepository, escooterRepository);
+        MongoRideRepository rideRepository = new MongoRideRepository("mongodb://localhost:27017", "assignment_2",
+                "rides", rideJsonMapper);
 
         // Initialize services
         UserService userService = new UserService(userRepository, userSerializer);
         EScooterService escooterService = new EScooterService(escooterRepository, escooterSerializer);
-        RideService rideService = new RideService(userRepository, escooterRepository, rideRepository, escooterService, rideSerializer);
+        RideService rideService = new RideService(userRepository, escooterRepository, rideRepository, escooterService,
+                rideSerializer);
 
         // Start presentation port
         PresentationPort presentationPort = new PresentationAdapter(8080, userService, escooterService, rideService);

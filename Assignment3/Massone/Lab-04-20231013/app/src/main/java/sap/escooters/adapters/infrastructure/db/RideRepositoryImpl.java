@@ -1,7 +1,6 @@
 package sap.escooters.adapters.infrastructure.db;
 
 import io.vertx.core.json.JsonObject;
-import sap.escooters.adapters.infrastructure.RideJsonMapper;
 import sap.escooters.adapters.mappers.RideSerializer;
 import sap.escooters.domain.entities.Ride;
 import sap.escooters.domain.repositories.RideRepository;
@@ -13,10 +12,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class RideRepositoryImpl implements RideRepository {
     private static final String RIDES_PATH = "rides";

@@ -19,10 +19,10 @@ import java.util.logging.Logger;
 
 public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
     static Logger LOGGER = Logger.getLogger("[EScooter Server]");
-    private int port;
-    private UserService userService;
-    private EScooterService escooterService;
-    private RideService rideService;
+    private final int port;
+    private final UserService userService;
+    private final EScooterService escooterService;
+    private final RideService rideService;
 
     public HttpServerAdapter(int port, UserService userService, EScooterService escooterService, RideService rideService) {
         this.port = port;
@@ -52,9 +52,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         router.route(HttpMethod.GET, "/api/rides/:rideId").handler(this::getRideInfo);
         router.route(HttpMethod.POST, "/api/rides/:rideId/end").handler(this::endRide);
 
-        server
-                .requestHandler(router)
-                .listen(port);
+        server.requestHandler(router).listen(port);
 
         LOGGER.log(Level.INFO, "EScooterMan server ready - port: " + port);
     }
@@ -68,12 +66,12 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         LOGGER.log(Level.INFO, "New ongoing rides count request: " + routingContext.currentRoute().getPath());
         HttpServerResponse response = routingContext.response();
         response.putHeader("content-type", "application/json");
-    
+
         int ongoingRidesCount = rideService.getNumberOfOngoingRides();
         JsonObject reply = new JsonObject();
         reply.put("result", "ok");
         reply.put("numberOfOngoingRides", ongoingRidesCount);
-    
+
         response.end(reply.toString());
     }
 
@@ -81,7 +79,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
         LOGGER.log(Level.INFO, "New ongoing rides request: " + routingContext.currentRoute().getPath());
         HttpServerResponse response = routingContext.response();
         response.putHeader("content-type", "text/html");
-    
+
         vertx.fileSystem().readFile("resources/webroot/ongoing_rides.html", result -> {
             if (result.succeeded()) {
                 response.end(result.result());
@@ -193,8 +191,7 @@ public class HttpServerAdapter extends AbstractVerticle implements ServerPort {
             LOGGER.info("Ride started successfully with rideId: " + rideId);
         } catch (Exception ex) {
             reply.put("result", "start-new-ride-failed");
-            LOGGER.severe("Failed to start new ride for user: " + userId + " with e-scooter: " + escooterId + ". Error: "
-                    + ex.getMessage());
+            LOGGER.severe("Failed to start new ride for user: " + userId + " with e-scooter: " + escooterId + ". Error: " + ex.getMessage());
         }
         sendReply(context, reply);
     }

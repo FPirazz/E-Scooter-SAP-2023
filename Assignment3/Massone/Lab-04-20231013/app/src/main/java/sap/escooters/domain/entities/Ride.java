@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Optional;
 
 public class Ride {
-
     private Date startedDate;
     private Optional<Date> endDate;
     private User user;
