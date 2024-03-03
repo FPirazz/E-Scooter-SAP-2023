@@ -1,2 +1,11 @@
 /.idea/
 **/.gradle/
+.idea
+.vscode
+.metals
+**/.settings
+.DS_Store
+*.class
+*.bin
+**/build/*
+**/bin/*
